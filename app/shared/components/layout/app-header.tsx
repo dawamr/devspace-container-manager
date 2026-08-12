@@ -1,5 +1,7 @@
-import { Link, useMatches, useRouterState } from '@tanstack/react-router'
-import { Bell, LayoutGrid, Search } from 'lucide-react'
+import { Link, useMatches, useNavigate, useRouterState } from '@tanstack/react-router'
+import { Bell, LayoutGrid, LogOut, Search } from 'lucide-react'
+
+import { logoutFn } from '#/modules/auth/server/logout'
 
 import { Avatar, AvatarFallback } from '#/shared/ui/avatar'
 import { Button } from '#/shared/ui/button'
@@ -19,6 +21,7 @@ import { ThemeToggle } from './theme-toggle'
 export function AppHeader() {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const matches = useMatches()
+  const navigate = useNavigate()
   const isHome = pathname === '/'
 
   const breadcrumbItems: BreadcrumbItem[] = matches.reduce<BreadcrumbItem[]>((items, match) => {
@@ -75,7 +78,8 @@ export function AppHeader() {
             <DropdownMenuItem>Profil</DropdownMenuItem>
             <DropdownMenuItem>Pengaturan</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+            <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onClick={async () => { await logoutFn(); navigate({ to: '/login' }) }}>
+              <LogOut className="mr-2 size-4" />
               Keluar
             </DropdownMenuItem>
           </DropdownMenuContent>

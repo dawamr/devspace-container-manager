@@ -1,5 +1,7 @@
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import { useEffect } from 'react'
 
+import { initPostHog } from '#/shared/lib/posthog'
 import appCss from '../styles/globals.css?url'
 
 const themeInitScript = `(function () {
@@ -30,6 +32,10 @@ export const Route = createRootRoute({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    initPostHog()
+  }, [])
+
   return (
     <html lang="id" suppressHydrationWarning>
       <head>
