@@ -1,3 +1,5 @@
 allowBuilds:
   esbuild: true
   lightningcss: true
+minimumReleaseAgeExclude:
+  - shadcn@4.17.0
