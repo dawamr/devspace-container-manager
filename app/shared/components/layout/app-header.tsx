@@ -1,0 +1,90 @@
+import { Link, useMatches, useRouterState } from '@tanstack/react-router'
+import { Bell, LayoutGrid, Search } from 'lucide-react'
+
+import { Avatar, AvatarFallback } from '#/shared/ui/avatar'
+import { Button } from '#/shared/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '#/shared/ui/dropdown-menu'
+import { Input } from '#/shared/ui/input'
+
+import { BreadcrumbNav, type BreadcrumbItem } from './breadcrumb-nav'
+import { ThemeToggle } from './theme-toggle'
+
+interface RouteStaticData {
+  title?: string
+}
+
+export function AppHeader() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname })
+  const matches = useMatches()
+  const isHome = pathname === '/'
+
+  const breadcrumbItems: BreadcrumbItem[] = matches.reduce<BreadcrumbItem[]>((items, match) => {
+    const title = (match.staticData as RouteStaticData | undefined)?.title
+    if (title) items.push({ label: title, href: match.pathname })
+    return items
+  }, [])
+
+  return (
+    <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur md:px-6">
+      {isHome ? (
+        <Link to="/" className="flex items-center gap-2 font-semibold text-foreground">
+          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm text-primary-foreground">
+            D
+          </span>
+          <span className="hidden sm:inline">DevSpace</span>
+        </Link>
+      ) : (
+        <div className="flex min-w-0 items-center gap-3">
+          <Button asChild variant="ghost" size="icon" aria-label="Kembali ke dashboard">
+            <Link to="/">
+              <LayoutGrid className="size-5" />
+            </Link>
+          </Button>
+          <BreadcrumbNav items={breadcrumbItems} />
+        </div>
+      )}
+
+      <div className="ml-auto flex items-center gap-2">
+        <div className="relative hidden md:block">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Cari project, stack, container..."
+            aria-label="Pencarian global"
+            className="w-64 pl-8"
+          />
+        </div>
+        <Button variant="ghost" size="icon" aria-label="Notifikasi">
+          <Bell className="size-5" />
+        </Button>
+        <ThemeToggle />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="rounded-full" aria-label="Menu pengguna">
+              <Avatar className="size-8">
+                <AvatarFallback>DR</AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuLabel>Dawam Raja</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Profil</DropdownMenuItem>
+            <DropdownMenuItem>Pengaturan</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+              Keluar
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </header>
+  )
+}
