@@ -99,7 +99,7 @@ Navigation structure: Dashboard | Projects | Infrastructure (Portainer Environme
 
 ## Sprint Structure
 
-Sprint selesai di Sprint 5 (Final MVP). Setiap sprint punya hypothesis yang diukur via PostHog:
+Sprint selesai di Sprint 5 (Final MVP). Setiap sprint punya hypothesis yang diukur via PostHog:/
 - Sprint 1: Auth + Project selection (< 90 detik)
 - Sprint 2: Container listing + actions
 - Sprint 3: Stack creation + deploy (< 120 detik)
