@@ -7,8 +7,8 @@ pnpm install
 pnpm dev
 ```
 
-Edit `src/routes/index.tsx` to get started. Add route files under
-`src/routes`; TanStack Router updates `src/routeTree.gen.ts` for you.
+Edit `app/routes/index.tsx` to get started. Add route files under
+`app/routes`; TanStack Router updates `app/routeTree.gen.ts` for you.
 
 Build the production app with:
 
