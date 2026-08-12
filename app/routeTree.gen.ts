@@ -9,50 +9,287 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as DashboardRouteImport } from './routes/_dashboard'
+import { Route as AuthLoginRouteImport } from './routes/_auth.login'
+import { Route as DashboardIndexRouteImport } from './routes/_dashboard.index'
+import { Route as DashboardAdministrationRouteImport } from './routes/_dashboard.administration'
+import { Route as DashboardInfrastructureRouteImport } from './routes/_dashboard.infrastructure'
+import { Route as DashboardProjectsRouteImport } from './routes/_dashboard.projects'
+import { Route as DashboardAdministrationIndexRouteImport } from './routes/_dashboard.administration.index'
+import { Route as DashboardAdministrationAuditLogsRouteImport } from './routes/_dashboard.administration.audit-logs'
+import { Route as DashboardAdministrationRolesRouteImport } from './routes/_dashboard.administration.roles'
+import { Route as DashboardAdministrationUsersRouteImport } from './routes/_dashboard.administration.users'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthRoute = AuthRouteImport.update({
+  id: '/_auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/_dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AuthRoute,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdministrationRoute = DashboardAdministrationRouteImport.update({
+  id: '/administration',
+  path: '/administration',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardInfrastructureRoute = DashboardInfrastructureRouteImport.update({
+  id: '/infrastructure',
+  path: '/infrastructure',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardProjectsRoute = DashboardProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdministrationIndexRoute =
+  DashboardAdministrationIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => DashboardAdministrationRoute,
+  } as any)
+const DashboardAdministrationAuditLogsRoute =
+  DashboardAdministrationAuditLogsRouteImport.update({
+    id: '/audit-logs',
+    path: '/audit-logs',
+    getParentRoute: () => DashboardAdministrationRoute,
+  } as any)
+const DashboardAdministrationRolesRoute =
+  DashboardAdministrationRolesRouteImport.update({
+    id: '/roles',
+    path: '/roles',
+    getParentRoute: () => DashboardAdministrationRoute,
+  } as any)
+const DashboardAdministrationUsersRoute =
+  DashboardAdministrationUsersRouteImport.update({
+    id: '/users',
+    path: '/users',
+    getParentRoute: () => DashboardAdministrationRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof DashboardIndexRoute
+  '/login': typeof AuthLoginRoute
+  '/administration': typeof DashboardAdministrationRouteWithChildren
+  '/infrastructure': typeof DashboardInfrastructureRoute
+  '/projects': typeof DashboardProjectsRoute
+  '/administration/audit-logs': typeof DashboardAdministrationAuditLogsRoute
+  '/administration/roles': typeof DashboardAdministrationRolesRoute
+  '/administration/users': typeof DashboardAdministrationUsersRoute
+  '/administration/': typeof DashboardAdministrationIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof DashboardIndexRoute
+  '/login': typeof AuthLoginRoute
+  '/infrastructure': typeof DashboardInfrastructureRoute
+  '/projects': typeof DashboardProjectsRoute
+  '/administration/audit-logs': typeof DashboardAdministrationAuditLogsRoute
+  '/administration/roles': typeof DashboardAdministrationRolesRoute
+  '/administration/users': typeof DashboardAdministrationUsersRoute
+  '/administration': typeof DashboardAdministrationIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_auth': typeof AuthRouteWithChildren
+  '/_dashboard': typeof DashboardRouteWithChildren
+  '/_auth/login': typeof AuthLoginRoute
+  '/_dashboard/administration': typeof DashboardAdministrationRouteWithChildren
+  '/_dashboard/infrastructure': typeof DashboardInfrastructureRoute
+  '/_dashboard/projects': typeof DashboardProjectsRoute
+  '/_dashboard/': typeof DashboardIndexRoute
+  '/_dashboard/administration/audit-logs': typeof DashboardAdministrationAuditLogsRoute
+  '/_dashboard/administration/roles': typeof DashboardAdministrationRolesRoute
+  '/_dashboard/administration/users': typeof DashboardAdministrationUsersRoute
+  '/_dashboard/administration/': typeof DashboardAdministrationIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/administration'
+    | '/infrastructure'
+    | '/projects'
+    | '/administration/audit-logs'
+    | '/administration/roles'
+    | '/administration/users'
+    | '/administration/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/infrastructure'
+    | '/projects'
+    | '/administration/audit-logs'
+    | '/administration/roles'
+    | '/administration/users'
+    | '/administration'
+  id:
+    | '__root__'
+    | '/_auth'
+    | '/_dashboard'
+    | '/_auth/login'
+    | '/_dashboard/administration'
+    | '/_dashboard/infrastructure'
+    | '/_dashboard/projects'
+    | '/_dashboard/'
+    | '/_dashboard/administration/audit-logs'
+    | '/_dashboard/administration/roles'
+    | '/_dashboard/administration/users'
+    | '/_dashboard/administration/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRouteWithChildren
+  DashboardRoute: typeof DashboardRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard': {
+      id: '/_dashboard'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_auth/login': {
+      id: '/_auth/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_dashboard/': {
+      id: '/_dashboard/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/administration': {
+      id: '/_dashboard/administration'
+      path: '/administration'
+      fullPath: '/administration'
+      preLoaderRoute: typeof DashboardAdministrationRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/infrastructure': {
+      id: '/_dashboard/infrastructure'
+      path: '/infrastructure'
+      fullPath: '/infrastructure'
+      preLoaderRoute: typeof DashboardInfrastructureRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/projects': {
+      id: '/_dashboard/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof DashboardProjectsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/administration/': {
+      id: '/_dashboard/administration/'
+      path: '/'
+      fullPath: '/administration/'
+      preLoaderRoute: typeof DashboardAdministrationIndexRouteImport
+      parentRoute: typeof DashboardAdministrationRoute
+    }
+    '/_dashboard/administration/audit-logs': {
+      id: '/_dashboard/administration/audit-logs'
+      path: '/audit-logs'
+      fullPath: '/administration/audit-logs'
+      preLoaderRoute: typeof DashboardAdministrationAuditLogsRouteImport
+      parentRoute: typeof DashboardAdministrationRoute
+    }
+    '/_dashboard/administration/roles': {
+      id: '/_dashboard/administration/roles'
+      path: '/roles'
+      fullPath: '/administration/roles'
+      preLoaderRoute: typeof DashboardAdministrationRolesRouteImport
+      parentRoute: typeof DashboardAdministrationRoute
+    }
+    '/_dashboard/administration/users': {
+      id: '/_dashboard/administration/users'
+      path: '/users'
+      fullPath: '/administration/users'
+      preLoaderRoute: typeof DashboardAdministrationUsersRouteImport
+      parentRoute: typeof DashboardAdministrationRoute
     }
   }
 }
 
+interface AuthRouteChildren {
+  AuthLoginRoute: typeof AuthLoginRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthLoginRoute: AuthLoginRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
+interface DashboardAdministrationRouteChildren {
+  DashboardAdministrationAuditLogsRoute: typeof DashboardAdministrationAuditLogsRoute
+  DashboardAdministrationRolesRoute: typeof DashboardAdministrationRolesRoute
+  DashboardAdministrationUsersRoute: typeof DashboardAdministrationUsersRoute
+  DashboardAdministrationIndexRoute: typeof DashboardAdministrationIndexRoute
+}
+
+const DashboardAdministrationRouteChildren: DashboardAdministrationRouteChildren =
+  {
+    DashboardAdministrationAuditLogsRoute:
+      DashboardAdministrationAuditLogsRoute,
+    DashboardAdministrationRolesRoute: DashboardAdministrationRolesRoute,
+    DashboardAdministrationUsersRoute: DashboardAdministrationUsersRoute,
+    DashboardAdministrationIndexRoute: DashboardAdministrationIndexRoute,
+  }
+
+const DashboardAdministrationRouteWithChildren =
+  DashboardAdministrationRoute._addFileChildren(
+    DashboardAdministrationRouteChildren,
+  )
+
+interface DashboardRouteChildren {
+  DashboardAdministrationRoute: typeof DashboardAdministrationRouteWithChildren
+  DashboardInfrastructureRoute: typeof DashboardInfrastructureRoute
+  DashboardProjectsRoute: typeof DashboardProjectsRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardAdministrationRoute: DashboardAdministrationRouteWithChildren,
+  DashboardInfrastructureRoute: DashboardInfrastructureRoute,
+  DashboardProjectsRoute: DashboardProjectsRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AuthRoute: AuthRouteWithChildren,
+  DashboardRoute: DashboardRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
