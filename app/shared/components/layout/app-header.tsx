@@ -28,17 +28,17 @@ export function AppHeader() {
   }, [])
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur md:px-6">
+    <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-white/10 bg-black/25 px-4 text-white backdrop-blur-xl md:px-6">
       {isHome ? (
-        <Link to="/" className="flex items-center gap-2 font-semibold text-foreground">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm text-primary-foreground">
+        <Link to="/" className="flex items-center gap-2 font-semibold text-white">
+          <span className="flex size-8 items-center justify-center rounded-lg bg-white/15 text-sm text-white backdrop-blur">
             D
           </span>
           <span className="hidden sm:inline">DevSpace</span>
         </Link>
       ) : (
         <div className="flex min-w-0 items-center gap-3">
-          <Button asChild variant="ghost" size="icon" aria-label="Kembali ke dashboard">
+          <Button asChild variant="ghost" size="icon" aria-label="Kembali ke dashboard" className="text-white hover:bg-white/10 hover:text-white">
             <Link to="/">
               <LayoutGrid className="size-5" />
             </Link>
@@ -49,15 +49,15 @@ export function AppHeader() {
 
       <div className="ml-auto flex items-center gap-2">
         <div className="relative hidden md:block">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-white/60" />
           <Input
             type="search"
             placeholder="Cari project, stack, container..."
             aria-label="Pencarian global"
-            className="w-64 pl-8"
+            className="w-64 border-white/15 bg-white/10 pl-8 text-white placeholder:text-white/50 focus-visible:ring-white/40"
           />
         </div>
-        <Button variant="ghost" size="icon" aria-label="Notifikasi">
+        <Button variant="ghost" size="icon" aria-label="Notifikasi" className="text-white hover:bg-white/10 hover:text-white">
           <Bell className="size-5" />
         </Button>
         <ThemeToggle />
