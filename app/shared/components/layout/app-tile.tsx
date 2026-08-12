@@ -2,13 +2,14 @@ import type { LucideIcon } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 
 import { cn } from '#/shared/lib/cn'
+import type { RoutePath } from '#/shared/lib/route-path'
 
 import { ACCENT_STYLES, type Accent } from './accent'
 
 export interface AppTileConfig {
   title: string
   description: string
-  href: string
+  href: RoutePath
   icon: LucideIcon
   accent: Accent
 }

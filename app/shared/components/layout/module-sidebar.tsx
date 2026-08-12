@@ -3,13 +3,14 @@ import { Link, useRouterState } from '@tanstack/react-router'
 import { Menu } from 'lucide-react'
 
 import { cn } from '#/shared/lib/cn'
+import type { RoutePath } from '#/shared/lib/route-path'
 import { Button } from '#/shared/ui/button'
 
 import { MobileDrawer } from './mobile-drawer'
 
 export interface ModuleNavItem {
   title: string
-  href: string
+  href: RoutePath
   icon: LucideIcon
 }
 
@@ -31,6 +32,7 @@ export function ModuleSidebar({ title, items }: ModuleSidebarProps) {
           <Link
             key={item.href}
             to={item.href}
+            aria-current={isActive ? 'page' : undefined}
             className={cn(
               'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
               isActive

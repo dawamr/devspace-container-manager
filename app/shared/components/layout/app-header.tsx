@@ -16,17 +16,13 @@ import { Input } from '#/shared/ui/input'
 import { BreadcrumbNav, type BreadcrumbItem } from './breadcrumb-nav'
 import { ThemeToggle } from './theme-toggle'
 
-interface RouteStaticData {
-  title?: string
-}
-
 export function AppHeader() {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const matches = useMatches()
   const isHome = pathname === '/'
 
   const breadcrumbItems: BreadcrumbItem[] = matches.reduce<BreadcrumbItem[]>((items, match) => {
-    const title = (match.staticData as RouteStaticData | undefined)?.title
+    const title = match.staticData.title
     if (title) items.push({ label: title, href: match.pathname })
     return items
   }, [])

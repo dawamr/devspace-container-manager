@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useRouterState } from '@tanstack/react-router'
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '#/shared/ui/sheet'
 
@@ -11,6 +12,13 @@ interface MobileDrawerProps {
 
 export function MobileDrawer({ title, trigger, children }: MobileDrawerProps) {
   const [open, setOpen] = useState(false)
+  const pathname = useRouterState({ select: (state) => state.location.pathname })
+
+  // Links rendered inside SheetContent don't count as an outside click, so the
+  // drawer would stay open on top of the page the user just navigated to.
+  useEffect(() => {
+    setOpen(false)
+  }, [pathname])
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
