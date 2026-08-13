@@ -108,7 +108,7 @@ export function PermissionMatrix({ open, onOpenChange, role }: PermissionMatrixP
         <div className="max-h-[60vh] overflow-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b">
+              <tr className="border-b border-[var(--glass-border)]">
                 <th className="py-2 pr-4 text-left font-medium">Resource</th>
                 {ACTIONS.map((action) => (
                   <th key={action} className="px-3 py-2 text-center font-medium capitalize">
@@ -122,7 +122,7 @@ export function PermissionMatrix({ open, onOpenChange, role }: PermissionMatrixP
                 const perms = permissionsByResource.get(resource) ?? []
                 const allSelected = perms.length > 0 && perms.every((p) => selectedIds.has(p.id))
                 return (
-                  <tr key={resource} className="border-b last:border-0">
+                  <tr key={resource} className="border-b border-[var(--glass-border)] last:border-0">
                     <td className="py-2 pr-4">
                       <div className="flex items-center gap-2">
                         <Checkbox
@@ -142,7 +142,7 @@ export function PermissionMatrix({ open, onOpenChange, role }: PermissionMatrixP
                               onCheckedChange={() => togglePermission(perm.id)}
                             />
                           ) : (
-                            <span className="text-muted-foreground">—</span>
+                            <span className="text-white/60">—</span>
                           )}
                         </td>
                       )

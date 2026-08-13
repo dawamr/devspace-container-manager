@@ -64,7 +64,7 @@ export function RolesTable() {
         </Button>
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-[var(--glass-radius-sm)] border border-[var(--glass-border)] bg-[var(--glass-surface)] backdrop-blur-[var(--glass-blur)]">
         <Table>
           <TableHeader>
             <TableRow>
@@ -78,13 +78,13 @@ export function RolesTable() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={5} className="text-center text-white/60">
                   Memuat...
                 </TableCell>
               </TableRow>
             ) : roles?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={5} className="text-center text-white/60">
                   Tidak ada role
                 </TableCell>
               </TableRow>
@@ -97,7 +97,7 @@ export function RolesTable() {
                       {role.isSystem && <Badge variant="secondary">System</Badge>}
                     </div>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="text-white/60">
                     {role.description ?? '—'}
                   </TableCell>
                   <TableCell>{role.permissionCount}</TableCell>

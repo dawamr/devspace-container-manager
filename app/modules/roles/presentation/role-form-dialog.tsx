@@ -106,7 +106,7 @@ export function RoleFormDialog({ open, onOpenChange, role }: RoleFormDialogProps
               placeholder="contoh: editor"
             />
             {isEdit && role?.isSystem && (
-              <p className="text-xs text-muted-foreground">System role tidak bisa diubah namanya</p>
+              <p className="text-xs text-white/60">System role tidak bisa diubah namanya</p>
             )}
           </div>
           <div className="grid gap-2">
