@@ -1,7 +1,6 @@
 import { eq, and, asc, count } from 'drizzle-orm'
 import { db } from '#/shared/db/client'
 import { users, roles } from '#/shared/db/schema'
-import { hashPassword } from '#/shared/lib/crypto'
 
 export type UserWithRole = {
   id: string
@@ -80,13 +79,12 @@ export async function emailExists(email: string, excludeId?: string): Promise<bo
   return rows.length > 0
 }
 
-export async function createUser(input: CreateUserInput): Promise<string> {
-  const passwordHash = await hashPassword(input.password)
+export async function createUser(input: CreateUserInput & { passwordHash: string }): Promise<string> {
   const [created] = await db
     .insert(users)
     .values({
       email: input.email,
-      passwordHash,
+      passwordHash: input.passwordHash,
       name: input.name,
       roleId: input.roleId,
     })

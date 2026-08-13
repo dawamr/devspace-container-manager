@@ -1,8 +1,11 @@
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import { useEffect } from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { initPostHog } from '#/shared/lib/posthog'
 import appCss from '../styles/globals.css?url'
+
+const queryClient = new QueryClient()
 
 const themeInitScript = `(function () {
   try {
@@ -43,7 +46,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
-        {children}
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
 
         <Scripts />
       </body>

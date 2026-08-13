@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { hashPassword } from '#/shared/lib/crypto'
 import {
   listUsers,
   findUserByIdWithRole,
@@ -41,7 +42,8 @@ export async function getUserById(id: string) {
 export async function createNewUser(input: CreateUserInput, _currentUserId: string) {
   const exists = await emailExists(input.email)
   if (exists) throw new Error('Email sudah digunakan')
-  const userId = await createUser(input)
+  const passwordHash = await hashPassword(input.password)
+  const userId = await createUser({ ...input, passwordHash })
   return userId
 }
 
