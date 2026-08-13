@@ -50,20 +50,20 @@ function LoginPage() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       <div className="space-y-1.5">
-        <h2 className="text-xl font-semibold text-foreground">Masuk ke DevSpace</h2>
-        <p className="text-sm text-muted-foreground">
-          Gunakan akun yang diberikan admin untuk masuk.
-        </p>
+        <h2 className="text-xl font-semibold tracking-tight text-white">Masuk ke DevSpace</h2>
+        <p className="text-sm text-white/60">Gunakan akun yang diberikan admin untuk masuk.</p>
       </div>
 
       {error && (
-        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+        <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
           {error}
         </div>
       )}
 
       <div className="space-y-1.5">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email" className="text-white/80">
+          Email
+        </Label>
         <Input
           id="email"
           name="email"
@@ -72,11 +72,14 @@ function LoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          className="border-white/20 bg-white/5 text-white placeholder:text-white/40 focus-visible:border-white/40 focus-visible:ring-white/20"
         />
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password" className="text-white/80">
+          Password
+        </Label>
         <Input
           id="password"
           name="password"
@@ -84,10 +87,15 @@ function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          className="border-white/20 bg-white/5 text-white placeholder:text-white/40 focus-visible:border-white/40 focus-visible:ring-white/20"
         />
       </div>
 
-      <Button type="submit" disabled={isSubmitting} className="mt-2">
+      <Button
+        type="submit"
+        disabled={isSubmitting}
+        className="mt-2 h-10 w-full bg-white text-black transition-colors hover:bg-white/90"
+      >
         {isSubmitting ? 'Memproses...' : 'Masuk'}
       </Button>
     </form>

@@ -14,6 +14,7 @@ import { Route as DashboardRouteImport } from './routes/_dashboard'
 import { Route as AuthLoginRouteImport } from './routes/_auth.login'
 import { Route as DashboardIndexRouteImport } from './routes/_dashboard.index'
 import { Route as DashboardAdministrationRouteImport } from './routes/_dashboard.administration'
+import { Route as DashboardForbiddenRouteImport } from './routes/_dashboard.forbidden'
 import { Route as DashboardInfrastructureRouteImport } from './routes/_dashboard.infrastructure'
 import { Route as DashboardProjectsRouteImport } from './routes/_dashboard.projects'
 import { Route as DashboardAdministrationIndexRouteImport } from './routes/_dashboard.administration.index'
@@ -42,6 +43,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
 const DashboardAdministrationRoute = DashboardAdministrationRouteImport.update({
   id: '/administration',
   path: '/administration',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardForbiddenRoute = DashboardForbiddenRouteImport.update({
+  id: '/forbidden',
+  path: '/forbidden',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardInfrastructureRoute = DashboardInfrastructureRouteImport.update({
@@ -83,6 +89,7 @@ export interface FileRoutesByFullPath {
   '/': typeof DashboardIndexRoute
   '/login': typeof AuthLoginRoute
   '/administration': typeof DashboardAdministrationRouteWithChildren
+  '/forbidden': typeof DashboardForbiddenRoute
   '/infrastructure': typeof DashboardInfrastructureRoute
   '/projects': typeof DashboardProjectsRoute
   '/administration/audit-logs': typeof DashboardAdministrationAuditLogsRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof DashboardIndexRoute
   '/login': typeof AuthLoginRoute
+  '/forbidden': typeof DashboardForbiddenRoute
   '/infrastructure': typeof DashboardInfrastructureRoute
   '/projects': typeof DashboardProjectsRoute
   '/administration/audit-logs': typeof DashboardAdministrationAuditLogsRoute
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/_dashboard': typeof DashboardRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_dashboard/administration': typeof DashboardAdministrationRouteWithChildren
+  '/_dashboard/forbidden': typeof DashboardForbiddenRoute
   '/_dashboard/infrastructure': typeof DashboardInfrastructureRoute
   '/_dashboard/projects': typeof DashboardProjectsRoute
   '/_dashboard/': typeof DashboardIndexRoute
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/administration'
+    | '/forbidden'
     | '/infrastructure'
     | '/projects'
     | '/administration/audit-logs'
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/forbidden'
     | '/infrastructure'
     | '/projects'
     | '/administration/audit-logs'
@@ -142,6 +153,7 @@ export interface FileRouteTypes {
     | '/_dashboard'
     | '/_auth/login'
     | '/_dashboard/administration'
+    | '/_dashboard/forbidden'
     | '/_dashboard/infrastructure'
     | '/_dashboard/projects'
     | '/_dashboard/'
@@ -191,6 +203,13 @@ declare module '@tanstack/react-router' {
       path: '/administration'
       fullPath: '/administration'
       preLoaderRoute: typeof DashboardAdministrationRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/forbidden': {
+      id: '/_dashboard/forbidden'
+      path: '/forbidden'
+      fullPath: '/forbidden'
+      preLoaderRoute: typeof DashboardForbiddenRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/_dashboard/infrastructure': {
@@ -271,6 +290,7 @@ const DashboardAdministrationRouteWithChildren =
 
 interface DashboardRouteChildren {
   DashboardAdministrationRoute: typeof DashboardAdministrationRouteWithChildren
+  DashboardForbiddenRoute: typeof DashboardForbiddenRoute
   DashboardInfrastructureRoute: typeof DashboardInfrastructureRoute
   DashboardProjectsRoute: typeof DashboardProjectsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
@@ -278,6 +298,7 @@ interface DashboardRouteChildren {
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAdministrationRoute: DashboardAdministrationRouteWithChildren,
+  DashboardForbiddenRoute: DashboardForbiddenRoute,
   DashboardInfrastructureRoute: DashboardInfrastructureRoute,
   DashboardProjectsRoute: DashboardProjectsRoute,
   DashboardIndexRoute: DashboardIndexRoute,

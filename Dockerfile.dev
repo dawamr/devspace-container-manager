@@ -1,0 +1,28 @@
+# syntax=docker/dockerfile:1
+# =============================================================================
+# DevSpace — TanStack Start development image (Vite HMR)
+# =============================================================================
+# Usage:
+#   docker compose -p dev-spaces --env-file /srv/docker/compose/.env.dev-spaces \
+#     -f /srv/docker/compose/dev-spaces.yml \
+#     -f /srv/docker/compose/dev-spaces.dev.yml up -d --build
+# =============================================================================
+
+FROM node:26-alpine
+RUN npm install -g pnpm@11.3.0
+WORKDIR /app
+
+# Install deps at image build time; bind-mount will overlay source,
+# but node_modules stays container-native via named volume.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile
+
+ENV NODE_ENV=development \
+    PORT=3000 \
+    HOST=0.0.0.0
+
+EXPOSE 3000
+
+# Vite dev server must bind 0.0.0.0 for container port mapping.
+# pnpm strips `--` when forwarding args; pass --host directly to vite via script.
+CMD ["pnpm", "exec", "vite", "dev", "--port", "3000", "--host", "0.0.0.0"]
