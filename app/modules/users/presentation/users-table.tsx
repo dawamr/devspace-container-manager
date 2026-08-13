@@ -61,11 +61,12 @@ export function UsersTable() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-4">
         <div className="relative max-w-sm flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/60" />
           <Input
             placeholder="Cari user..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            variant="glass"
             className="pl-9"
           />
         </div>
@@ -79,7 +80,7 @@ export function UsersTable() {
         </Button>
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-[var(--glass-radius-sm)] border border-[var(--glass-border)] bg-[var(--glass-surface)] backdrop-blur-[var(--glass-blur)]">
         <Table>
           <TableHeader>
             <TableRow>
@@ -94,13 +95,13 @@ export function UsersTable() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                <TableCell colSpan={6} className="text-center text-white/60">
                   Memuat...
                 </TableCell>
               </TableRow>
             ) : filtered?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                <TableCell colSpan={6} className="text-center text-white/60">
                   Tidak ada user
                 </TableCell>
               </TableRow>
@@ -119,7 +120,7 @@ export function UsersTable() {
                       {user.isActive ? 'Active' : 'Inactive'}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="text-white/60">
                     {user.lastLoginAt
                       ? new Date(user.lastLoginAt).toLocaleDateString('id-ID', {
                           day: 'numeric',

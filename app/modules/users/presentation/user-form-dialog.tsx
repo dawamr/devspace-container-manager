@@ -129,8 +129,9 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
             <Input
               id="name"
               value={form.name}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
               required
+              variant="glass"
             />
           </div>
           <div className="grid gap-2">
@@ -141,6 +142,7 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
               value={form.email}
               onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
               required
+              variant="glass"
             />
           </div>
           {!isEdit && (
@@ -152,6 +154,7 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
                 value={form.password}
                 onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
                 required
+                variant="glass"
               />
             </div>
           )}
