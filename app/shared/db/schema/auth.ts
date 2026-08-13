@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, timestamp, boolean } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, timestamp, boolean, type AnyPgColumn } from 'drizzle-orm/pg-core'
 import { roles } from './rbac'
 
 export const users = pgTable('users', {
@@ -13,6 +13,7 @@ export const users = pgTable('users', {
   lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedBy: uuid('updated_by').references((): AnyPgColumn => users.id),
 })
 
 export const sessions = pgTable('sessions', {
