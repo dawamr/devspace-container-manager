@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
+import { GlassCard } from '#/shared/ui/glass-card'
 
 const CLIP_START = 3
 const CLIP_END = 8
@@ -11,7 +12,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
   if (!video) return
   const el: HTMLVideoElement = video
 
-  el.playbackRate = 0.25
+  el.playbackRate = 0.4
 
   function seekToClipStart() {
   el.currentTime = CLIP_START
@@ -89,9 +90,9 @@ export function AuthLayout({ children }: { children: ReactNode }) {
             </div>
 
             {/* Glass card */}
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
+            <GlassCard strong className="rounded-2xl p-6 sm:p-8">
               {children}
-            </div>
+            </GlassCard>
           </div>
         </div>
       </div>

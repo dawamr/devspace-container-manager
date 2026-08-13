@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router'
 
 import { cn } from '#/shared/lib/cn'
 import type { RoutePath } from '#/shared/lib/route-path'
+import { GlassCard } from '#/shared/ui/glass-card'
 
 /* ------------------------------------------------------------------ */
 /* Clock widget (CasaOS hero: tanggal + jam besar)                     */
@@ -30,14 +31,14 @@ export function ClockWidget() {
   const minutes = String(now.getMinutes()).padStart(2, '0')
 
   return (
-    <section aria-label="Jam" className="glass-panel flex flex-col gap-1 rounded-2xl p-6">
-      <span className="glass-text-muted text-sm capitalize">{DATE_FORMAT.format(now)}</span>
+    <GlassCard className="flex flex-col gap-1 p-6" aria-label="Jam">
+      <span className="text-sm text-white/50 capitalize">{DATE_FORMAT.format(now)}</span>
       <span className="text-5xl font-semibold tracking-tight tabular-nums md:text-6xl">
         {hours}
-        <span className="glass-text-muted">:</span>
+        <span className="text-white/50">:</span>
         {minutes}
       </span>
-    </section>
+    </GlassCard>
   )
 }
 
@@ -60,10 +61,7 @@ export function GaugeWidget({ label, value, detail }: GaugeWidgetProps) {
   const offset = GAUGE_CIRCUMFERENCE * (1 - clamped / 100)
 
   return (
-    <section
-      aria-label={label}
-      className="glass-panel flex items-center gap-4 rounded-2xl p-4"
-    >
+    <GlassCard className="flex items-center gap-4 p-4" aria-label={label}>
       <svg viewBox="0 0 80 80" className="size-20 shrink-0 -rotate-90" role="img" aria-hidden>
         <circle
           cx="40"
@@ -86,11 +84,11 @@ export function GaugeWidget({ label, value, detail }: GaugeWidgetProps) {
         />
       </svg>
       <div className="flex flex-col">
-        <span className="glass-text-muted text-xs font-medium uppercase tracking-wide">{label}</span>
+        <span className="text-xs font-medium uppercase tracking-wide text-white/50">{label}</span>
         <span className="text-2xl font-semibold tabular-nums">{Math.round(clamped)}%</span>
-        {detail ? <span className="glass-text-muted text-xs">{detail}</span> : null}
+        {detail ? <span className="text-xs text-white/50">{detail}</span> : null}
       </div>
-    </section>
+    </GlassCard>
   )
 }
 
@@ -110,10 +108,10 @@ export function StorageWidget({ label, usedLabel, totalLabel, percent }: Storage
   const clamped = Math.min(100, Math.max(0, percent))
 
   return (
-    <section aria-label={label} className="glass-panel flex flex-col gap-3 rounded-2xl p-4">
+    <GlassCard className="flex flex-col gap-3 p-4" aria-label={label}>
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-sm font-medium">{label}</span>
-        <span className="glass-text-muted text-xs tabular-nums">
+        <span className="text-xs text-white/50 tabular-nums">
           {usedLabel} / {totalLabel}
         </span>
       </div>
@@ -130,7 +128,7 @@ export function StorageWidget({ label, usedLabel, totalLabel, percent }: Storage
           style={{ width: `${clamped}%` }}
         />
       </div>
-    </section>
+    </GlassCard>
   )
 }
 
@@ -152,20 +150,20 @@ export function NetworkWidget({ label, downLabel, upLabel, history }: NetworkWid
     .join(' ')
 
   return (
-    <section aria-label={label} className="glass-panel flex flex-col gap-3 rounded-2xl p-4">
+    <GlassCard className="flex flex-col gap-3 p-4" aria-label={label}>
       <span className="text-sm font-medium">{label}</span>
       <svg viewBox="0 0 100 36" preserveAspectRatio="none" className="h-12 w-full" aria-hidden>
         <polyline points={points} fill="none" strokeWidth="2" className="stroke-emerald-300" />
       </svg>
       <div className="flex items-center justify-between text-xs">
-        <span className="glass-text-muted">
+        <span className="text-white/50">
           ↓ <span className="text-white/90 tabular-nums">{downLabel}</span>
         </span>
-        <span className="glass-text-muted">
+        <span className="text-white/50">
           ↑ <span className="text-white/90 tabular-nums">{upLabel}</span>
         </span>
       </div>
-    </section>
+    </GlassCard>
   )
 }
 
@@ -185,16 +183,18 @@ export function GlassAppTile({ title, description, href, icon: Icon }: GlassAppT
     <Link
       to={href}
       className={cn(
-        'group glass-panel-subtle flex flex-col items-center gap-3 rounded-2xl p-5 text-center transition-all',
-        'hover:-translate-y-1 hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60',
+        'group flex flex-col items-center gap-3 rounded-[var(--glass-radius-sm)]',
+        'border border-[var(--glass-border)] bg-[var(--glass-surface)] p-5 backdrop-blur-[var(--glass-blur-sm)]',
+        'transition-colors hover:border-[var(--glass-border-strong)] hover:bg-[var(--glass-surface-strong)]',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60',
       )}
     >
       <span className="flex size-14 items-center justify-center rounded-2xl bg-white/15 text-white shadow-inner transition-transform group-hover:scale-105">
         <Icon className="size-7" />
       </span>
-      <span className="flex flex-col gap-0.5">
+      <span className="flex flex-col items-center gap-0.5 text-center">
         <span className="text-sm font-semibold">{title}</span>
-        <span className="glass-text-muted text-xs">{description}</span>
+        <span className="text-xs text-white/50">{description}</span>
       </span>
     </Link>
   )

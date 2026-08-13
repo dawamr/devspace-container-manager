@@ -31,7 +31,7 @@ export function AppHeader() {
   }, [])
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-white/10 bg-black/25 px-4 text-white backdrop-blur-xl md:px-6">
+    <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-[var(--glass-border)] bg-[var(--glass-surface)] px-4 text-white backdrop-blur-[var(--glass-blur)] md:px-6">
       {isHome ? (
         <Link to="/" className="flex items-center gap-2 font-semibold text-white">
           <span className="flex size-8 items-center justify-center rounded-lg bg-white/15 text-sm text-white backdrop-blur">
@@ -57,7 +57,8 @@ export function AppHeader() {
             type="search"
             placeholder="Cari project, stack, container..."
             aria-label="Pencarian global"
-            className="w-64 border-white/15 bg-white/10 pl-8 text-white placeholder:text-white/50 focus-visible:ring-white/40"
+            variant="glass"
+            className="w-64 pl-8"
           />
         </div>
         <Button variant="ghost" size="icon" aria-label="Notifikasi" className="text-white hover:bg-white/10 hover:text-white">
