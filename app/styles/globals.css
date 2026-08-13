@@ -1,10 +1,23 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is([data-theme="dark"] *));
 
 :root {
   --radius: 0.75rem;
+
+  /* Glassmorphism tokens */
+  --glass-surface: oklch(1 0 0 / 8%);
+  --glass-surface-strong: oklch(1 0 0 / 14%);
+  --glass-surface-subtle: oklch(1 0 0 / 5%);
+  --glass-border: oklch(1 0 0 / 15%);
+  --glass-border-strong: oklch(1 0 0 / 25%);
+  --glass-blur: 24px;
+  --glass-blur-sm: 12px;
+  --glass-radius: 1.5rem;
+  --glass-radius-sm: 0.75rem;
+  --glass-shadow: 0 8px 32px oklch(0 0 0 / 20%);
+  --glass-ring-focus: 0 0 0 3px oklch(1 0 0 / 20%);
 
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -28,7 +41,7 @@
   --warning-foreground: oklch(0.2 0.02 80);
   --info: oklch(0.6 0.15 230);
   --info-foreground: oklch(0.98 0 0);
-  --border: oklch(0.9 0 0);
+  --border: transparent;
   --input: oklch(0.9 0 0);
   --ring: oklch(0.55 0.18 260);
   --chart-1: oklch(0.6 0.2 260);
@@ -38,7 +51,7 @@
   --chart-5: oklch(0.7 0.18 90);
 }
 
-.dark {
+[data-theme="dark"] {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.98 0 0);
   --card: oklch(0.2 0 0);
@@ -61,7 +74,7 @@
   --warning-foreground: oklch(0.145 0.02 80);
   --info: oklch(0.7 0.15 230);
   --info-foreground: oklch(0.145 0 0);
-  --border: oklch(1 0 0 / 12%);
+  --border: transparent;
   --input: oklch(1 0 0 / 18%);
   --ring: oklch(0.7 0.18 260);
   --chart-1: oklch(0.65 0.2 260);
@@ -73,11 +86,10 @@
 
 /* Glass surfaces (dipakai saat wallpaper aktif) */
 :root {
-  --glass-bg: oklch(1 0 0 / 7%);
-  --glass-border: oklch(1 0 0 / 14%);
+  --glass-bg: var(--glass-surface);
   --glass-foreground: oklch(0.985 0 0);
   --glass-muted: oklch(1 0 0 / 62%);
-  --glass-card: oklch(1 0 0 / 12%);
+  --glass-card: var(--glass-surface-strong);
   --glass-card-strong: oklch(0 0 0 / 28%);
 }
 
@@ -119,11 +131,17 @@
   --color-glass-foreground: var(--glass-foreground);
   --color-glass-muted: var(--glass-muted);
   --color-glass-card: var(--glass-card);
+  --color-glass-surface: var(--glass-surface);
+  --color-glass-surface-strong: var(--glass-surface-strong);
+  --color-glass-surface-subtle: var(--glass-surface-subtle);
+  --color-glass-border-strong: var(--glass-border-strong);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-glass: var(--glass-radius);
+  --radius-glass-sm: var(--glass-radius-sm);
 }
 
 @layer base {
@@ -137,28 +155,42 @@
 }
 
 @layer components {
-  /* CasaOS-style glass panel di atas wallpaper */
-  .glass-panel {
-    /* Layer gelap di bawah blur menjaga kontras teks putih di area wallpaper terang */
-    background-color: var(--glass-card);
-    background-image: linear-gradient(var(--glass-card-strong), var(--glass-card-strong));
-    border: 1px solid var(--glass-border);
-    color: var(--glass-foreground);
-    backdrop-filter: blur(20px) saturate(1.4);
-    -webkit-backdrop-filter: blur(20px) saturate(1.4);
-    box-shadow: 0 8px 32px oklch(0 0 0 / 24%);
+  /* Page typography di atas wallpaper */
+  .glass-page-title {
+    @apply text-2xl font-semibold tracking-tight text-white;
   }
 
-  .glass-panel-subtle {
-    background-color: var(--glass-bg);
-    background-image: linear-gradient(var(--glass-card-strong), var(--glass-card-strong));
-    border: 1px solid var(--glass-border);
-    color: var(--glass-foreground);
-    backdrop-filter: blur(14px) saturate(1.3);
-    -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  .glass-page-desc {
+    @apply text-sm text-white/60;
   }
 
-  .glass-text-muted {
-    color: var(--glass-muted);
+  /* Modal radius konsisten */
+  .glass-modal-radius {
+    border-radius: var(--glass-radius);
+  }
+
+  /* Reusable smooth-border input — konsisten dengan glass tokens */
+  .glass-input {
+    border-radius: var(--glass-radius-sm);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-surface-subtle);
+    color: oklch(0.98 0 0);
+    box-shadow: 0 1px 2px oklch(0 0 0 / 5%);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    outline: none;
+  }
+
+  .glass-input::placeholder {
+    color: oklch(1 0 0 / 40%);
+  }
+
+  .glass-input:focus-visible {
+    border-color: oklch(1 0 0 / 40%);
+    box-shadow: var(--glass-ring-focus);
+  }
+
+  .glass-input:disabled {
+    opacity: 0.5;
+    pointer-events: none;
   }
 }
