@@ -13,14 +13,9 @@ const config = defineConfig({
     // allow the public hostname through vite's host check.
     allowedHosts: ['devspace.1dev.my.id', '.1dev.my.id'],
   },
-  // bcryptjs uses Node.js Buffer which is not available in browser.
-  // Mark as external for client builds — server functions handle it separately.
-  optimizeDeps: {
-    exclude: ['bcryptjs'],
-  },
-  ssr: {
-    noExternal: ['bcryptjs'],
-  },
+  // bcryptjs is server-only via createServerFn — TanStack Start strips
+  // server function handlers from the client bundle. No manual exclusion
+  // needed; doing so can cause dev-mode module resolution issues.
 })
 
 export default config
