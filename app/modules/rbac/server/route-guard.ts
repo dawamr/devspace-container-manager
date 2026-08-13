@@ -1,6 +1,6 @@
 // app/modules/rbac/server/route-guard.ts
 import { redirect } from '@tanstack/react-router'
-import { checkPermissionWithBypass } from '../domain/permission-service'
+import { checkPermissionFn } from './check-permission'
 import type { Resource, Action } from '../domain/constants'
 import type { AuthUser } from '#/modules/auth/domain/auth-service'
 
@@ -10,7 +10,7 @@ type BeforeLoadContext = {
 
 export function createRouteGuard(resource: Resource, action: Action) {
   return async ({ context }: BeforeLoadContext) => {
-    const allowed = await checkPermissionWithBypass(context.user.roleName, resource, action)
+    const allowed = await checkPermissionFn({ data: { roleName: context.user.roleName, resource, action } })
     if (!allowed) {
       throw redirect({ to: '/forbidden' })
     }
