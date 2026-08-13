@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { PageHeader } from '#/shared/ui/glass-card'
 
 export const Route = createFileRoute('/_dashboard/administration/audit-logs')({
   staticData: { title: 'Audit Logs' },
@@ -8,8 +9,7 @@ export const Route = createFileRoute('/_dashboard/administration/audit-logs')({
 function AuditLogsPage() {
   return (
     <div className="flex flex-col gap-2">
-      <h1 className="text-2xl font-semibold text-foreground">Audit Logs</h1>
-      <p className="text-sm text-muted-foreground">Log aktivitas akan tersedia setelah modul Audit Log dibangun.</p>
+      <PageHeader title="Audit Logs" description="Log aktivitas akan tersedia setelah modul Audit Log dibangun." />
     </div>
   )
 }

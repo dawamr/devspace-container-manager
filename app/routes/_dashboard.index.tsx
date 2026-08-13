@@ -40,7 +40,7 @@ const NETWORK_HISTORY = [0.2, 0.35, 0.3, 0.55, 0.42, 0.6, 0.5, 0.72, 0.58, 0.66,
 
 function DashboardHome() {
   return (
-    <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-3">
+    <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
       {/* Kolom kiri: clock + system status, ala widget stack CasaOS */}
       <div className="flex flex-col gap-4">
         <ClockWidget />

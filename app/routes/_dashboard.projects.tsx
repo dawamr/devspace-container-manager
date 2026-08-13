@@ -8,6 +8,7 @@ import { createProjectFn } from '#/modules/projects/server/create-project'
 import { Button } from '#/shared/ui/button'
 import { Input } from '#/shared/ui/input'
 import { Label } from '#/shared/ui/label'
+import { PageHeader } from '#/shared/ui/glass-card'
 
 export const Route = createFileRoute('/_dashboard/projects')({
   staticData: { title: 'Projects' },
@@ -61,21 +62,17 @@ function ProjectsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">Projects</h1>
-          <p className="text-sm text-muted-foreground">Kelola project & environment tim</p>
-        </div>
+      <PageHeader title="Projects" description="Kelola project & environment tim">
         <Button onClick={() => setShowForm(!showForm)}>
           <Plus className="mr-2 size-4" />
           Project Baru
         </Button>
-      </div>
+      </PageHeader>
 
       {showForm && (
         <form
           onSubmit={handleCreate}
-          className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6"
+          className="flex flex-col gap-4 rounded-[var(--glass-radius)] border border-[var(--glass-border)] bg-[var(--glass-surface)] p-6 backdrop-blur-[var(--glass-blur)]"
         >
           <div className="space-y-1.5">
             <Label htmlFor="project-name">Nama Project</Label>
@@ -109,20 +106,20 @@ function ProjectsPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {projects.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-white/60">
             Belum ada project. Buat project pertama.
           </p>
         ) : (
           projects.map((project) => (
             <div
               key={project.id}
-              className="flex items-start gap-3 rounded-xl border border-border bg-card p-4"
+              className="flex items-start gap-3 rounded-[var(--glass-radius-sm)] border border-[var(--glass-border)] bg-[var(--glass-surface)] p-4 backdrop-blur-[var(--glass-blur-sm)]"
             >
               <Folder className="mt-0.5 size-5 text-primary" />
               <div>
                 <h3 className="font-medium text-card-foreground">{project.name}</h3>
                 {project.description && (
-                  <p className="text-sm text-muted-foreground">{project.description}</p>
+                  <p className="text-sm text-white/60">{project.description}</p>
                 )}
               </div>
             </div>

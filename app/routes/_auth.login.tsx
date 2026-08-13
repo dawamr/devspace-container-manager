@@ -5,6 +5,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { loginFn } from '#/modules/auth/server/login'
 import { captureEvent, identifyUser } from '#/shared/lib/posthog'
 import { Button } from '#/shared/ui/button'
+import { GlassPanel } from '#/shared/ui/glass-card'
 import { Input } from '#/shared/ui/input'
 import { Label } from '#/shared/ui/label'
 
@@ -55,9 +56,9 @@ function LoginPage() {
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
+        <GlassPanel className="border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
           {error}
-        </div>
+        </GlassPanel>
       )}
 
       <div className="space-y-1.5">
@@ -72,7 +73,8 @@ function LoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="border-white/20 bg-white/5 text-white placeholder:text-white/40 focus-visible:border-white/40 focus-visible:ring-white/20"
+          variant="glass"
+          className="focus-visible:ring-white/20"
         />
       </div>
 
@@ -87,14 +89,15 @@ function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="border-white/20 bg-white/5 text-white placeholder:text-white/40 focus-visible:border-white/40 focus-visible:ring-white/20"
+          variant="glass"
+          className="focus-visible:ring-white/20"
         />
       </div>
 
       <Button
         type="submit"
         disabled={isSubmitting}
-        className="mt-2 h-10 w-full bg-white text-black transition-colors hover:bg-white/90"
+        className="mt-2 h-10 w-full"
       >
         {isSubmitting ? 'Memproses...' : 'Masuk'}
       </Button>

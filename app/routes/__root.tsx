@@ -13,7 +13,7 @@ const themeInitScript = `(function () {
     var theme = stored === 'light' || stored === 'dark'
       ? stored
       : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    document.documentElement.classList.toggle('dark', theme === 'dark');
+    document.documentElement.setAttribute('data-theme', theme);
   } catch (error) {}
 })();`
 
@@ -41,11 +41,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 
   return (
     <html lang="id" suppressHydrationWarning>
-      <head>
+      <head suppressHydrationWarning>
         <HeadContent />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <QueryClientProvider client={queryClient}>
           {children}
         </QueryClientProvider>
