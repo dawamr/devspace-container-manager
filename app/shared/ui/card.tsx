@@ -1,15 +1,21 @@
 import * as React from "react"
 
 import { cn } from "#/shared/lib/cn.ts"
+import { GlassCard } from "#/shared/ui/glass-card.tsx"
+
+/* ------------------------------------------------------------------ */
+/* Card — wrapper tipis di atas GlassCard                              */
+/*                                                                    */
+/* Struktur CardHeader/CardTitle/CardDescription/CardContent/          */
+/* CardFooter/CardAction tetak dipertahankan (shadcn-compatible),      */
+/* tapi surface styling delegasikan ke GlassCard + glass tokens.       */
+/* ------------------------------------------------------------------ */
 
 function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <div
+    <GlassCard
       data-slot="card"
-      className={cn(
-        "flex flex-col gap-6 rounded-xl border bg-card py-6 text-card-foreground shadow-sm",
-        className
-      )}
+      className={cn("flex flex-col gap-6 py-6", className)}
       {...props}
     />
   )
@@ -32,7 +38,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
-      className={cn("leading-none font-semibold", className)}
+      className={cn("leading-none font-semibold text-white", className)}
       {...props}
     />
   )
@@ -42,7 +48,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn("text-sm text-muted-foreground", className)}
+      className={cn("text-sm text-white/60", className)}
       {...props}
     />
   )
