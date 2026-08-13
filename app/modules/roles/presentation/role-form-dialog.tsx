@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createRoleFn } from '../server/create-role'
 import { updateRoleFn } from '../server/update-role'
+import { captureEvent } from '#/shared/lib/posthog'
 import { Button } from '#/shared/ui/button'
 import { Input } from '#/shared/ui/input'
 import { Label } from '#/shared/ui/label'
@@ -66,6 +67,11 @@ export function RoleFormDialog({ open, onOpenChange, role }: RoleFormDialogProps
       }
     },
     onSuccess: () => {
+      if (isEdit) {
+        captureEvent('admin_role_updated', { roleId: role!.id })
+      } else {
+        captureEvent('admin_role_created', { roleName: form.name })
+      }
       queryClient.invalidateQueries({ queryKey: ['roles'] })
       onOpenChange(false)
     },

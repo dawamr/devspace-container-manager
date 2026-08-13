@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { listUsersFn } from '../server/list-users'
 import { deleteUserFn } from '../server/delete-user'
@@ -23,6 +23,7 @@ import {
   DialogTitle,
 } from '#/shared/ui/dialog'
 import { Plus, Search, Pencil, Trash2 } from 'lucide-react'
+import { captureEvent } from '#/shared/lib/posthog'
 
 type User = Awaited<ReturnType<typeof listUsersFn>>[number]
 
@@ -37,9 +38,14 @@ export function UsersTable() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const queryClient = useQueryClient()
 
+  useEffect(() => {
+    captureEvent('admin_users_viewed')
+  }, [])
+
   const deleteMutation = useMutation({
     mutationFn: () => deleteUserFn({ data: { id: deleteId! } }),
     onSuccess: () => {
+      captureEvent('admin_user_deleted', { userId: deleteId })
       queryClient.invalidateQueries({ queryKey: ['users'] })
       setDeleteId(null)
     },

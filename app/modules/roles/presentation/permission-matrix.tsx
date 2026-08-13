@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { listPermissionsFn } from '../server/list-permissions'
 import { updateRolePermissionsFn } from '../server/update-role-permissions'
 import { getRolePermissions } from '../domain/role-service'
+import { captureEvent } from '#/shared/lib/posthog'
 import { Button } from '#/shared/ui/button'
 import { Checkbox } from '#/shared/ui/checkbox'
 import {
@@ -51,6 +52,7 @@ export function PermissionMatrix({ open, onOpenChange, role }: PermissionMatrixP
         data: { roleId: role!.id, permissionIds: Array.from(selectedIds) },
       }),
     onSuccess: () => {
+      captureEvent('admin_permissions_updated', { roleId: role!.id, permissionCount: selectedIds.size })
       queryClient.invalidateQueries({ queryKey: ['roles'] })
       onOpenChange(false)
     },

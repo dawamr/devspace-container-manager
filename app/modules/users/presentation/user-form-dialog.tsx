@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createUserFn } from '../server/create-user'
 import { updateUserFn } from '../server/update-user'
 import { RoleSelect } from './role-select'
+import { captureEvent } from '#/shared/lib/posthog'
 import { Button } from '#/shared/ui/button'
 import { Input } from '#/shared/ui/input'
 import { Label } from '#/shared/ui/label'
@@ -95,6 +96,11 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
       }
     },
     onSuccess: () => {
+      if (isEdit) {
+        captureEvent('admin_user_updated', { userId: user!.id })
+      } else {
+        captureEvent('admin_user_created', { roleId: form.roleId })
+      }
       queryClient.invalidateQueries({ queryKey: ['users'] })
       onOpenChange(false)
     },

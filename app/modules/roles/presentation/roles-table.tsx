@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { listRolesFn } from '../server/list-roles'
 import { deleteRoleFn } from '../server/delete-role'
@@ -23,6 +23,7 @@ import {
   DialogTitle,
 } from '#/shared/ui/dialog'
 import { Plus, Pencil, Trash2, Settings2 } from 'lucide-react'
+import { captureEvent } from '#/shared/lib/posthog'
 
 type Role = Awaited<ReturnType<typeof listRolesFn>>[number]
 
@@ -37,9 +38,14 @@ export function RolesTable() {
   const [deleteRole, setDeleteRole] = useState<Role | null>(null)
   const queryClient = useQueryClient()
 
+  useEffect(() => {
+    captureEvent('admin_roles_viewed')
+  }, [])
+
   const deleteMutation = useMutation({
     mutationFn: () => deleteRoleFn({ data: { id: deleteRole!.id } }),
     onSuccess: () => {
+      captureEvent('admin_role_deleted', { roleId: deleteRole!.id })
       queryClient.invalidateQueries({ queryKey: ['roles'] })
       setDeleteRole(null)
     },
