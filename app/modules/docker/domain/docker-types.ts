@@ -48,6 +48,8 @@ export interface ContainerDetail extends ContainerSummary {
   workingDir: string
   restartPolicy: string
   labels: Record<string, string>
+  /** Raw inspect payload (JSON string) for full-fidelity JSON viewer. */
+  raw: string
 }
 
 /**
@@ -172,5 +174,6 @@ export function mapContainerInspect(info: Docker.ContainerInspectInfo): Containe
     workingDir: info.Config?.WorkingDir ?? '',
     restartPolicy: info.HostConfig?.RestartPolicy?.Name ?? '',
     labels: info.Config?.Labels ?? {},
+    raw: JSON.stringify(info),
   }
 }

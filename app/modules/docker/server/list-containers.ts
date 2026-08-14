@@ -5,17 +5,16 @@ import { findEnvironmentById } from '#/modules/environments/infrastructure/envir
 import { requirePermission } from '#/modules/rbac/server/require-permission'
 import { RESOURCES, ACTIONS } from '#/modules/rbac/domain/constants'
 import { withDocker } from '../infrastructure/docker-client'
-import { mapContainerInspect } from '../domain/docker-types'
+import { mapContainerInfo, type ContainerSummary } from '../domain/docker-types'
 import { captureServerEvent } from '#/shared/lib/posthog-server'
 import { redactDockerHost } from '#/shared/lib/posthog'
 
-const inspectInput = z.object({
+const listInput = z.object({
   environmentId: z.string().uuid(),
-  containerId: z.string().min(1),
 })
 
 /**
- * Inspect a single Docker container and return its rich detail view.
+ * List all containers (including stopped) for a given Environment.
  *
  * Server-side only: resolves the Environment's Docker host from the DB,
  * authorizes CONTAINERS.READ, then queries Docker Engine directly via
@@ -24,11 +23,12 @@ const inspectInput = z.object({
  * All Docker failures are funneled through `withDocker`, which classifies
  * the error and retries transient (unreachable/5xx) failures with backoff.
  *
- * Emits `container_inspected` with the request duration in ms.
+ * Emits `container_list_viewed` (Sprint 2 / H1) with the rendered container
+ * count and the request duration in ms.
  */
-export const inspectContainerFn = createServerFn({ method: 'GET' })
-  .validator(inspectInput)
-  .handler(async ({ data }) => {
+export const listContainersFn = createServerFn({ method: 'GET' })
+  .validator(listInput)
+  .handler(async ({ data }): Promise<ContainerSummary[]> => {
     await requirePermission(RESOURCES.CONTAINERS, ACTIONS.READ)
 
     const environment = await findEnvironmentById(data.environmentId)
@@ -38,24 +38,23 @@ export const inspectContainerFn = createServerFn({ method: 'GET' })
 
     const startedAt = performance.now()
 
-    const inspectInfo = await withDocker(
-      'inspectContainer',
-      (docker) => docker.getContainer(data.containerId).inspect(),
+    const containers = await withDocker(
+      'listContainers',
+      (docker) => docker.listContainers({ all: true }),
       {
         dockerHost: environment.dockerHost,
         dockerCertPath: environment.dockerCertPath,
-        resourceId: data.containerId,
       },
     )
 
-    const detail = mapContainerInspect(inspectInfo)
+    const mapped = containers.map(mapContainerInfo)
 
-    await captureServerEvent('container_inspected', {
+    await captureServerEvent('container_list_viewed', {
       environmentId: data.environmentId,
-      containerId: data.containerId,
+      containerCount: mapped.length,
       dockerHost: redactDockerHost(environment.dockerHost),
       duration_ms: Math.round(performance.now() - startedAt),
     })
 
-    return detail
+    return mapped
   })

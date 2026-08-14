@@ -21,6 +21,11 @@ import { Route as DashboardAdministrationIndexRouteImport } from './routes/_dash
 import { Route as DashboardAdministrationAuditLogsRouteImport } from './routes/_dashboard.administration.audit-logs'
 import { Route as DashboardAdministrationRolesRouteImport } from './routes/_dashboard.administration.roles'
 import { Route as DashboardAdministrationUsersRouteImport } from './routes/_dashboard.administration.users'
+import { Route as DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRouteImport } from './routes/_dashboard.projects.$projectId.environments.$environmentId.containers'
+import { Route as DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRouteImport } from './routes/_dashboard.projects.$projectId.environments.$environmentId.containers.$containerId'
+import { Route as DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdIndexRouteImport } from './routes/_dashboard.projects.$projectId.environments.$environmentId.containers.$containerId.index'
+import { Route as DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdInspectRouteImport } from './routes/_dashboard.projects.$projectId.environments.$environmentId.containers.$containerId.inspect'
+import { Route as DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdLogsRouteImport } from './routes/_dashboard.projects.$projectId.environments.$environmentId.containers.$containerId.logs'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
@@ -84,6 +89,50 @@ const DashboardAdministrationUsersRoute =
     path: '/users',
     getParentRoute: () => DashboardAdministrationRoute,
   } as any)
+const DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRoute =
+  DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRouteImport.update(
+    {
+      id: '/$projectId/environments/$environmentId/containers',
+      path: '/$projectId/environments/$environmentId/containers',
+      getParentRoute: () => DashboardProjectsRoute,
+    } as any,
+  )
+const DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRoute =
+  DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRouteImport.update(
+    {
+      id: '/$containerId',
+      path: '/$containerId',
+      getParentRoute: () =>
+        DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRoute,
+    } as any,
+  )
+const DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdIndexRoute =
+  DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdIndexRouteImport.update(
+    {
+      id: '/',
+      path: '/',
+      getParentRoute: () =>
+        DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRoute,
+    } as any,
+  )
+const DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdInspectRoute =
+  DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdInspectRouteImport.update(
+    {
+      id: '/inspect',
+      path: '/inspect',
+      getParentRoute: () =>
+        DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRoute,
+    } as any,
+  )
+const DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdLogsRoute =
+  DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdLogsRouteImport.update(
+    {
+      id: '/logs',
+      path: '/logs',
+      getParentRoute: () =>
+        DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRoute,
+    } as any,
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof DashboardIndexRoute
@@ -91,22 +140,31 @@ export interface FileRoutesByFullPath {
   '/administration': typeof DashboardAdministrationRouteWithChildren
   '/forbidden': typeof DashboardForbiddenRoute
   '/infrastructure': typeof DashboardInfrastructureRoute
-  '/projects': typeof DashboardProjectsRoute
+  '/projects': typeof DashboardProjectsRouteWithChildren
   '/administration/audit-logs': typeof DashboardAdministrationAuditLogsRoute
   '/administration/roles': typeof DashboardAdministrationRolesRoute
   '/administration/users': typeof DashboardAdministrationUsersRoute
   '/administration/': typeof DashboardAdministrationIndexRoute
+  '/projects/$projectId/environments/$environmentId/containers': typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRouteWithChildren
+  '/projects/$projectId/environments/$environmentId/containers/$containerId': typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRouteWithChildren
+  '/projects/$projectId/environments/$environmentId/containers/$containerId/inspect': typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdInspectRoute
+  '/projects/$projectId/environments/$environmentId/containers/$containerId/logs': typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdLogsRoute
+  '/projects/$projectId/environments/$environmentId/containers/$containerId/': typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof DashboardIndexRoute
   '/login': typeof AuthLoginRoute
   '/forbidden': typeof DashboardForbiddenRoute
   '/infrastructure': typeof DashboardInfrastructureRoute
-  '/projects': typeof DashboardProjectsRoute
+  '/projects': typeof DashboardProjectsRouteWithChildren
   '/administration/audit-logs': typeof DashboardAdministrationAuditLogsRoute
   '/administration/roles': typeof DashboardAdministrationRolesRoute
   '/administration/users': typeof DashboardAdministrationUsersRoute
   '/administration': typeof DashboardAdministrationIndexRoute
+  '/projects/$projectId/environments/$environmentId/containers': typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRouteWithChildren
+  '/projects/$projectId/environments/$environmentId/containers/$containerId/inspect': typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdInspectRoute
+  '/projects/$projectId/environments/$environmentId/containers/$containerId/logs': typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdLogsRoute
+  '/projects/$projectId/environments/$environmentId/containers/$containerId': typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,12 +174,17 @@ export interface FileRoutesById {
   '/_dashboard/administration': typeof DashboardAdministrationRouteWithChildren
   '/_dashboard/forbidden': typeof DashboardForbiddenRoute
   '/_dashboard/infrastructure': typeof DashboardInfrastructureRoute
-  '/_dashboard/projects': typeof DashboardProjectsRoute
+  '/_dashboard/projects': typeof DashboardProjectsRouteWithChildren
   '/_dashboard/': typeof DashboardIndexRoute
   '/_dashboard/administration/audit-logs': typeof DashboardAdministrationAuditLogsRoute
   '/_dashboard/administration/roles': typeof DashboardAdministrationRolesRoute
   '/_dashboard/administration/users': typeof DashboardAdministrationUsersRoute
   '/_dashboard/administration/': typeof DashboardAdministrationIndexRoute
+  '/_dashboard/projects/$projectId/environments/$environmentId/containers': typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRouteWithChildren
+  '/_dashboard/projects/$projectId/environments/$environmentId/containers/$containerId': typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRouteWithChildren
+  '/_dashboard/projects/$projectId/environments/$environmentId/containers/$containerId/inspect': typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdInspectRoute
+  '/_dashboard/projects/$projectId/environments/$environmentId/containers/$containerId/logs': typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdLogsRoute
+  '/_dashboard/projects/$projectId/environments/$environmentId/containers/$containerId/': typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -136,6 +199,11 @@ export interface FileRouteTypes {
     | '/administration/roles'
     | '/administration/users'
     | '/administration/'
+    | '/projects/$projectId/environments/$environmentId/containers'
+    | '/projects/$projectId/environments/$environmentId/containers/$containerId'
+    | '/projects/$projectId/environments/$environmentId/containers/$containerId/inspect'
+    | '/projects/$projectId/environments/$environmentId/containers/$containerId/logs'
+    | '/projects/$projectId/environments/$environmentId/containers/$containerId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -147,6 +215,10 @@ export interface FileRouteTypes {
     | '/administration/roles'
     | '/administration/users'
     | '/administration'
+    | '/projects/$projectId/environments/$environmentId/containers'
+    | '/projects/$projectId/environments/$environmentId/containers/$containerId/inspect'
+    | '/projects/$projectId/environments/$environmentId/containers/$containerId/logs'
+    | '/projects/$projectId/environments/$environmentId/containers/$containerId'
   id:
     | '__root__'
     | '/_auth'
@@ -161,6 +233,11 @@ export interface FileRouteTypes {
     | '/_dashboard/administration/roles'
     | '/_dashboard/administration/users'
     | '/_dashboard/administration/'
+    | '/_dashboard/projects/$projectId/environments/$environmentId/containers'
+    | '/_dashboard/projects/$projectId/environments/$environmentId/containers/$containerId'
+    | '/_dashboard/projects/$projectId/environments/$environmentId/containers/$containerId/inspect'
+    | '/_dashboard/projects/$projectId/environments/$environmentId/containers/$containerId/logs'
+    | '/_dashboard/projects/$projectId/environments/$environmentId/containers/$containerId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -254,6 +331,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAdministrationUsersRouteImport
       parentRoute: typeof DashboardAdministrationRoute
     }
+    '/_dashboard/projects/$projectId/environments/$environmentId/containers': {
+      id: '/_dashboard/projects/$projectId/environments/$environmentId/containers'
+      path: '/$projectId/environments/$environmentId/containers'
+      fullPath: '/projects/$projectId/environments/$environmentId/containers'
+      preLoaderRoute: typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRouteImport
+      parentRoute: typeof DashboardProjectsRoute
+    }
+    '/_dashboard/projects/$projectId/environments/$environmentId/containers/$containerId': {
+      id: '/_dashboard/projects/$projectId/environments/$environmentId/containers/$containerId'
+      path: '/$containerId'
+      fullPath: '/projects/$projectId/environments/$environmentId/containers/$containerId'
+      preLoaderRoute: typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRouteImport
+      parentRoute: typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRoute
+    }
+    '/_dashboard/projects/$projectId/environments/$environmentId/containers/$containerId/': {
+      id: '/_dashboard/projects/$projectId/environments/$environmentId/containers/$containerId/'
+      path: '/'
+      fullPath: '/projects/$projectId/environments/$environmentId/containers/$containerId/'
+      preLoaderRoute: typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdIndexRouteImport
+      parentRoute: typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRoute
+    }
+    '/_dashboard/projects/$projectId/environments/$environmentId/containers/$containerId/inspect': {
+      id: '/_dashboard/projects/$projectId/environments/$environmentId/containers/$containerId/inspect'
+      path: '/inspect'
+      fullPath: '/projects/$projectId/environments/$environmentId/containers/$containerId/inspect'
+      preLoaderRoute: typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdInspectRouteImport
+      parentRoute: typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRoute
+    }
+    '/_dashboard/projects/$projectId/environments/$environmentId/containers/$containerId/logs': {
+      id: '/_dashboard/projects/$projectId/environments/$environmentId/containers/$containerId/logs'
+      path: '/logs'
+      fullPath: '/projects/$projectId/environments/$environmentId/containers/$containerId/logs'
+      preLoaderRoute: typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdLogsRouteImport
+      parentRoute: typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRoute
+    }
   }
 }
 
@@ -288,11 +400,59 @@ const DashboardAdministrationRouteWithChildren =
     DashboardAdministrationRouteChildren,
   )
 
+interface DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRouteChildren {
+  DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdInspectRoute: typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdInspectRoute
+  DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdLogsRoute: typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdLogsRoute
+  DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdIndexRoute: typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdIndexRoute
+}
+
+const DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRouteChildren: DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRouteChildren =
+  {
+    DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdInspectRoute:
+      DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdInspectRoute,
+    DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdLogsRoute:
+      DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdLogsRoute,
+    DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdIndexRoute:
+      DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdIndexRoute,
+  }
+
+const DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRouteWithChildren =
+  DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRoute._addFileChildren(
+    DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRouteChildren,
+  )
+
+interface DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRouteChildren {
+  DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRoute: typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRouteWithChildren
+}
+
+const DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRouteChildren: DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRouteChildren =
+  {
+    DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRoute:
+      DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersContainerIdRouteWithChildren,
+  }
+
+const DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRouteWithChildren =
+  DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRoute._addFileChildren(
+    DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRouteChildren,
+  )
+
+interface DashboardProjectsRouteChildren {
+  DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRoute: typeof DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRouteWithChildren
+}
+
+const DashboardProjectsRouteChildren: DashboardProjectsRouteChildren = {
+  DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRoute:
+    DashboardProjectsProjectIdEnvironmentsEnvironmentIdContainersRouteWithChildren,
+}
+
+const DashboardProjectsRouteWithChildren =
+  DashboardProjectsRoute._addFileChildren(DashboardProjectsRouteChildren)
+
 interface DashboardRouteChildren {
   DashboardAdministrationRoute: typeof DashboardAdministrationRouteWithChildren
   DashboardForbiddenRoute: typeof DashboardForbiddenRoute
   DashboardInfrastructureRoute: typeof DashboardInfrastructureRoute
-  DashboardProjectsRoute: typeof DashboardProjectsRoute
+  DashboardProjectsRoute: typeof DashboardProjectsRouteWithChildren
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
@@ -300,7 +460,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAdministrationRoute: DashboardAdministrationRouteWithChildren,
   DashboardForbiddenRoute: DashboardForbiddenRoute,
   DashboardInfrastructureRoute: DashboardInfrastructureRoute,
-  DashboardProjectsRoute: DashboardProjectsRoute,
+  DashboardProjectsRoute: DashboardProjectsRouteWithChildren,
   DashboardIndexRoute: DashboardIndexRoute,
 }
 
