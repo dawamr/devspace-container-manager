@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, boolean, timestamp, unique } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, boolean, timestamp, jsonb, unique } from 'drizzle-orm/pg-core'
 import { environments } from './environments'
 import { projects } from './projects'
 
@@ -16,6 +16,10 @@ export const containerRegistry = pgTable(
       .references(() => projects.id, { onDelete: 'cascade' })
       .notNull(),
     stackName: varchar('stack_name', { length: 255 }),
+    status: varchar('status', { length: 255 }),
+    health: varchar('health', { length: 20 }).default('none').notNull(),
+    ports: jsonb('ports').default([]).notNull(),
+    dockerCreatedAt: timestamp('docker_created_at', { withTimezone: true }),
     firstSeenAt: timestamp('first_seen_at', { withTimezone: true }).defaultNow().notNull(),
     lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).defaultNow().notNull(),
     isActive: boolean('is_active').default(true).notNull(),
