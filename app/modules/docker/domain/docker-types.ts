@@ -83,12 +83,12 @@ function normalizeState(state: string): ContainerSummary['state'] {
   return KNOWN_STATES.has(state) ? (state as ContainerSummary['state']) : 'exited'
 }
 
-function normalizeHealth(status: string): ContainerHealth {
+export function normalizeHealth(status: string): ContainerHealth {
   const match = /\((healthy|unhealthy|starting)\)/i.exec(status)
   return match ? (match[1].toLowerCase() as ContainerHealth) : 'none'
 }
 
-function mapPorts(ports: Docker.ContainerInfo['Ports']): string[] {
+export function mapPorts(ports: Docker.ContainerInfo['Ports']): string[] {
   if (!ports) return []
   return ports.map((p) => {
     if (p.PublicPort) {
