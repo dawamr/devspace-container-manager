@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Layers, Container } from 'lucide-react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Layers, Container, Play, Square, RotateCw, Loader2 } from 'lucide-react'
 
 import {
   Sheet,
@@ -13,6 +13,7 @@ import { cn } from '#/shared/lib/cn'
 import { HealthBadge } from '#/modules/docker/presentation/container-health-badge'
 import { ContainerDetailDrawer } from '#/modules/docker/presentation/container-detail-drawer'
 import { getStackDetailFn, type StackContainerSummary } from '#/modules/docker/server/get-stack-detail'
+import { stackBulkActionFn } from '#/modules/docker/server/stack-bulk-action'
 import type { ContainerSummary } from '#/modules/docker/domain/docker-types'
 
 interface StackDetailDrawerProps {
@@ -36,6 +37,22 @@ export function StackDetailDrawer({ stackId, open, onOpenChange }: StackDetailDr
     queryFn: () => getStackDetailFn({ data: { stackId: stackId! } }),
     enabled: !!stackId && open,
   })
+
+  const queryClient = useQueryClient()
+  const [pendingAction, setPendingAction] = useState<'start' | 'stop' | 'restart' | null>(null)
+
+  const bulkMutation = useMutation({
+    mutationFn: (action: 'start' | 'stop' | 'restart') =>
+      stackBulkActionFn({ data: { stackId: stackId!, action } }),
+    onMutate: (action) => setPendingAction(action),
+    onSettled: () => setPendingAction(null),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stack-detail', stackId] })
+      queryClient.invalidateQueries({ queryKey: ['all-stacks'] })
+    },
+  })
+
+  const isBusy = bulkMutation.isPending
 
   return (
     <>
@@ -97,6 +114,52 @@ export function StackDetailDrawer({ stackId, open, onOpenChange }: StackDetailDr
                   <dd className="text-sm text-white/70">{formatDate(detail.lastSeenAt)}</dd>
                 </div>
               </dl>
+
+              {/* Bulk action bar */}
+              {detail && detail.containers.length > 0 && (
+                <div className="flex items-center gap-1.5 rounded-[var(--glass-radius)] border border-[var(--glass-border)] bg-white/5 p-1.5">
+                  <span className="px-2 text-xs text-white/50">Bulk:</span>
+                  <button
+                    type="button"
+                    disabled={isBusy}
+                    onClick={() => bulkMutation.mutate('start')}
+                    className="flex items-center gap-1.5 rounded-[calc(var(--glass-radius)-2px)] border border-[var(--glass-border)] bg-[var(--glass-surface)] px-2.5 py-1.5 text-xs text-white/70 transition-colors hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none"
+                  >
+                    {pendingAction === 'start' && isBusy ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <Play className="size-3.5" />
+                    )}
+                    Start All
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isBusy}
+                    onClick={() => bulkMutation.mutate('stop')}
+                    className="flex items-center gap-1.5 rounded-[calc(var(--glass-radius)-2px)] border border-[var(--glass-border)] bg-[var(--glass-surface)] px-2.5 py-1.5 text-xs text-white/70 transition-colors hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none"
+                  >
+                    {pendingAction === 'stop' && isBusy ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <Square className="size-3.5" />
+                    )}
+                    Stop All
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isBusy}
+                    onClick={() => bulkMutation.mutate('restart')}
+                    className="flex items-center gap-1.5 rounded-[calc(var(--glass-radius)-2px)] border border-[var(--glass-border)] bg-[var(--glass-surface)] px-2.5 py-1.5 text-xs text-white/70 transition-colors hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none"
+                  >
+                    {pendingAction === 'restart' && isBusy ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <RotateCw className="size-3.5" />
+                    )}
+                    Restart All
+                  </button>
+                </div>
+              )}
 
               {/* Container list */}
               <div className="flex flex-col gap-2">
