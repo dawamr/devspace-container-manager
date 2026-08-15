@@ -109,6 +109,31 @@ function ContainersPage() {
     localStorage.setItem(COLUMNS_KEY, JSON.stringify(columnVisibility))
   }, [columnVisibility])
 
+  // ── Keyboard shortcuts ─────────────────────────────────
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      // Don't intercept if user is typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        if (e.key === 'Escape') {
+          e.target.blur()
+        }
+        return
+      }
+
+      if (e.key === '/' || e.key === 'f') {
+        e.preventDefault()
+        searchRef.current?.focus()
+      }
+      if (e.key === 'Escape') {
+        if (drawerOpen) setDrawerOpen(false)
+        else if (search) setSearch('')
+      }
+    }
+
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [drawerOpen, search])
+
   // ── Data queries ───────────────────────────────────────
   const {
     data: containers,
