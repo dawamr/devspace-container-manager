@@ -36,6 +36,13 @@
       "when": 1786769116444,
       "tag": "0004_container-stack-registry",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786782772942,
+      "tag": "0005_silent_king_cobra",
+      "breakpoints": true
     }
   ]
 }
