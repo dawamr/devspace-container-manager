@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useParams } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
-import { Boxes, ArrowLeft } from 'lucide-react'
+import { Boxes, ArrowLeft, RotateCw } from 'lucide-react'
 import { captureEvent } from '#/shared/lib/posthog'
 
 import { listContainersFn } from '#/modules/docker/server/list-containers'
@@ -9,7 +9,6 @@ import { ContainerDetailDrawer } from '#/modules/docker/presentation/container-d
 import type { ContainerSummary } from '#/modules/docker/domain/docker-types'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '#/shared/ui/button'
-import { Skeleton } from '#/shared/ui/skeleton'
 import { PageHeader } from '#/shared/ui/glass-card'
 
 export const Route = createFileRoute(
@@ -34,13 +33,22 @@ function ContainersPage() {
     })
   }, [projectId, environmentId])
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading, isError, error, dataUpdatedAt, refetch, isFetching } = useQuery({
     queryKey: ['containers', environmentId],
     queryFn: () => listContainersFn({ data: { environmentId } }),
+    refetchInterval: 30_000,
   })
 
   const containers = (data ?? []) as ContainerSummary[]
   const [detailTarget, setDetailTarget] = useState<ContainerSummary | null>(null)
+
+  // Freshness indicator: tick every 1s to show "Updated Xs ago".
+  const [, forceTick] = useState(0)
+  useEffect(() => {
+    const t = setInterval(() => forceTick((n) => n + 1), 1_000)
+    return () => clearInterval(t)
+  }, [])
+  const secondsAgo = dataUpdatedAt ? Math.max(0, Math.round((Date.now() - dataUpdatedAt) / 1000)) : null
 
   return (
     <div className="flex flex-col gap-6">
@@ -56,9 +64,26 @@ function ContainersPage() {
         title="Containers"
         description="Daftar container dari Docker Engine environment ini"
       >
-        <Link to="/projects">
-          <Button variant="secondary">Project</Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          {secondsAgo !== null && (
+            <span className="text-xs text-white/40 tabular-nums" title="Auto-refresh tiap 30 detik">
+              Updated {secondsAgo}s ago
+            </span>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => void refetch()}
+            disabled={isFetching}
+            title="Refresh (r)"
+            className="text-white/60 hover:text-white"
+          >
+            <RotateCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} />
+          </Button>
+          <Link to="/projects">
+            <Button variant="secondary">Project</Button>
+          </Link>
+        </div>
       </PageHeader>
 
       {isLoading ? (
@@ -84,6 +109,7 @@ function ContainersPage() {
           containers={containers}
           environmentId={environmentId}
           onOpenDetail={setDetailTarget}
+          onRefresh={() => void refetch()}
         />
       )}
 
@@ -102,10 +128,30 @@ function ContainersPage() {
 function ContainerTableSkeleton() {
   return (
     <div className="flex flex-col gap-3">
-      <Skeleton className="h-10 w-full rounded-[var(--glass-radius)]" />
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={i} className="h-12 w-full rounded-[var(--glass-radius)]" />
-      ))}
+      {/* Summary pills skeleton */}
+      <div className="flex flex-wrap gap-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-8 w-24 animate-pulse rounded-[var(--glass-radius)] border border-[var(--glass-border)] bg-[var(--glass-surface)]"
+          />
+        ))}
+      </div>
+      {/* Table rows skeleton */}
+      <div className="rounded-[var(--glass-radius)] border border-[var(--glass-border)] bg-[var(--glass-surface)] backdrop-blur-[var(--glass-blur)]">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-4 border-b border-[var(--glass-border)] px-4 py-3 last:border-0"
+          >
+            <div className="size-4 animate-pulse rounded-[4px] bg-white/10" />
+            <div className="h-4 flex-1 animate-pulse rounded bg-white/10" style={{ maxWidth: `${60 - i * 5}%` }} />
+            <div className="h-4 w-20 animate-pulse rounded bg-white/10" />
+            <div className="h-4 w-16 animate-pulse rounded bg-white/10" />
+            <div className="h-4 w-24 animate-pulse rounded bg-white/10" />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

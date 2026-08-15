@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
 import {
   createColumnHelper,
   flexRender,
@@ -8,6 +8,7 @@ import {
   useReactTable,
   type ColumnDef,
   type ColumnFiltersState,
+  type RowSelectionState,
   type SortingState,
 } from '@tanstack/react-table'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -21,6 +22,8 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  Copy,
+  Check,
 } from 'lucide-react'
 
 import type { ContainerSummary } from '#/modules/docker/domain/docker-types'
@@ -43,13 +46,16 @@ import {
   TableHeader,
   TableRow,
 } from '#/shared/ui/table'
+import { Checkbox } from '#/shared/ui/checkbox'
+import { cn } from '#/shared/lib/cn'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '#/shared/ui/select'
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '#/shared/ui/tooltip'
+import { ContainerSummaryBar } from './container-summary-bar'
+import { ContainerBulkToolbar } from './container-bulk-toolbar'
 import {
   Dialog,
   DialogContent,
@@ -74,15 +80,6 @@ const ACTION_BTN_CLASS =
   'size-7 border border-[var(--glass-border)] bg-[var(--glass-surface)] backdrop-blur-[var(--glass-blur)] ' +
   'text-white/70 hover:text-white hover:bg-white/10 hover:border-[var(--glass-border-strong)] ' +
   'disabled:opacity-30 disabled:pointer-events-none'
-
-const STATUS_OPTIONS = [
-  { value: 'all', label: 'All Status' },
-  { value: 'running', label: 'Running' },
-  { value: 'exited', label: 'Exited' },
-  { value: 'paused', label: 'Paused' },
-  { value: 'restarting', label: 'Restarting' },
-  { value: 'dead', label: 'Dead' },
-]
 
 function StateBadge({ state }: { state: ContainerState }) {
   return (
@@ -111,6 +108,7 @@ interface ContainerTableProps {
   containers: ContainerSummary[]
   environmentId: string
   onOpenDetail: (container: ContainerSummary) => void
+  onRefresh?: () => void
 }
 
 function SortHeader({
@@ -143,7 +141,68 @@ function SortHeader({
   )
 }
 
-export function ContainerTable({ containers, environmentId, onOpenDetail }: ContainerTableProps) {
+function truncateMiddle(value: string, max = 32): string {
+  if (value.length <= max) return value
+  const keep = Math.floor((max - 1) / 2)
+  return `${value.slice(0, keep)}…${value.slice(value.length - keep)}`
+}
+
+function CopyableText({
+  value,
+  tooltip,
+  className,
+}: {
+  value: string
+  tooltip?: string
+  className?: string
+}) {
+  const [copied, setCopied] = useState(false)
+  const copy = (e: MouseEvent) => {
+    e.stopPropagation()
+    void navigator.clipboard?.writeText(value)
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 1500)
+  }
+  return (
+    <TooltipProvider delayDuration={300}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={copy}
+            className="inline-flex items-center gap-1 text-left hover:text-white"
+          >
+            <span className={cn('truncate', className)}>{truncateMiddle(value)}</span>
+            {copied ? (
+              <Check className="size-3.5 shrink-0 text-emerald-400" />
+            ) : (
+              <Copy className="size-3.5 shrink-0 text-white/40 hover:text-white" />
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>{tooltip ?? value}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+}
+
+function ContainerNameCell({ name, image }: { name: string; image: string }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <CopyableText value={name} tooltip={image} className="font-medium text-card-foreground" />
+      <TooltipProvider delayDuration={300}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="block truncate text-xs text-white/50">{truncateMiddle(image, 40)}</span>
+          </TooltipTrigger>
+          <TooltipContent>{image}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </div>
+  )
+}
+
+export function ContainerTable({ containers, environmentId, onOpenDetail, onRefresh }: ContainerTableProps) {
   const queryClient = useQueryClient()
   const [pendingId, setPendingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -151,6 +210,45 @@ export function ContainerTable({ containers, environmentId, onOpenDetail }: Cont
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [removeTarget, setRemoveTarget] = useState<ContainerSummary | null>(null)
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const searchRef = useRef<HTMLInputElement>(null)
+
+  const [activeFilter, setActiveFilter] = useState<string>('all')
+
+  // 'unhealthy' bukan nilai `state` — pre-filter data sebelum masuk table.
+  // 'running'/'exited' langsung via columnFilters kolom state.
+  const tableData = useMemo(() => {
+    if (activeFilter === 'unhealthy') {
+      return containers.filter(
+        (c) => c.health !== 'healthy' || c.state === 'dead' || c.state === 'restarting',
+      )
+    }
+    return containers
+  }, [containers, activeFilter])
+
+  const setStatusFilter = (value: string) => {
+    setActiveFilter(value)
+    setColumnFilters(value === 'all' || value === 'unhealthy' ? [] : [{ id: 'state', value }])
+  }
+
+  // Keyboard shortcuts: f = focus search, r = refresh, Esc = clear search.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const el = document.activeElement
+      const typing = el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement
+      if (e.key === 'f' && !typing) {
+        e.preventDefault()
+        searchRef.current?.focus()
+      } else if (e.key === 'r' && !typing) {
+        e.preventDefault()
+        onRefresh?.()
+      } else if (e.key === 'Escape' && typing && el === searchRef.current) {
+        setGlobalFilter('')
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onRefresh])
 
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ['containers', environmentId] })
@@ -219,17 +317,35 @@ export function ContainerTable({ containers, environmentId, onOpenDetail }: Cont
     })
   }
 
-  const columns = useMemo<ColumnDef<ContainerSummary, any>[]>(
-    () => [
+  const columns = useMemo<ColumnDef<ContainerSummary, any>[]>(() => [
+      columnHelper.display({
+        id: 'select',
+        header: ({ table }) => (
+          <Checkbox
+            checked={table.getIsAllRowsSelected() ? true : table.getIsSomeRowsSelected() ? 'indeterminate' : false}
+            onCheckedChange={(checked) =>
+              table.getToggleAllRowsSelectedHandler()({ target: { checked: !!checked } })
+            }
+            aria-label="Select all"
+          />
+        ),
+        cell: ({ row }) => (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(checked) =>
+              row.getToggleSelectedHandler()({ target: { checked: !!checked } })
+            }
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Select row"
+          />
+        ),
+        enableSorting: false,
+      }),
       columnHelper.accessor('name', {
         header: ({ column }) => <SortHeader label="Name" column={column} />,
         cell: (info) => (
-          <span className="font-medium text-card-foreground">{info.getValue()}</span>
+          <ContainerNameCell name={info.getValue()} image={info.row.original.image} />
         ),
-      }),
-      columnHelper.accessor('image', {
-        header: ({ column }) => <SortHeader label="Image" column={column} />,
-        cell: (info) => <span className="text-white/70">{info.getValue()}</span>,
       }),
       columnHelper.accessor('state', {
         header: ({ column }) => <SortHeader label="State" column={column} />,
@@ -354,12 +470,14 @@ export function ContainerTable({ containers, environmentId, onOpenDetail }: Cont
   )
 
   const table = useReactTable({
-    data: containers,
+    data: tableData,
     columns,
-    state: { globalFilter, sorting, columnFilters },
+    enableRowSelection: true,
+    state: { globalFilter, sorting, columnFilters, rowSelection },
     onGlobalFilterChange: setGlobalFilter,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -374,9 +492,6 @@ export function ContainerTable({ containers, environmentId, onOpenDetail }: Cont
       )
     },
   })
-
-  const statusFilter = (columnFilters.find((f) => f.id === 'state')?.value as string) ?? 'all'
-
   return (
     <div className="flex flex-col gap-3">
       {error && (
@@ -386,30 +501,24 @@ export function ContainerTable({ containers, environmentId, onOpenDetail }: Cont
         </div>
       )}
 
+      <ContainerSummaryBar containers={containers} active={activeFilter} onChange={setStatusFilter} />
+
+      {Object.keys(rowSelection).length >= 1 && (
+        <ContainerBulkToolbar
+          selectedIds={Object.keys(rowSelection).filter((id) => rowSelection[id])}
+          environmentId={environmentId}
+          onClear={() => setRowSelection({})}
+        />
+      )}
+
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <Input
-          placeholder="Search name, image, state…"
+          ref={searchRef}
+          placeholder="Search name, image, state…  (f)"
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
           className="sm:max-w-xs"
         />
-        <Select
-          value={statusFilter}
-          onValueChange={(v) =>
-            setColumnFilters(v === 'all' ? [] : [{ id: 'state', value: v }])
-          }
-        >
-          <SelectTrigger className="sm:w-44">
-            <SelectValue placeholder="Filter status" />
-          </SelectTrigger>
-          <SelectContent>
-            {STATUS_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       <div className="rounded-[var(--glass-radius)] border border-[var(--glass-border)] bg-[var(--glass-surface)] backdrop-blur-[var(--glass-blur)]">
@@ -438,19 +547,28 @@ export function ContainerTable({ containers, environmentId, onOpenDetail }: Cont
                 </TableCell>
               </TableRow>
             ) : (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className="cursor-pointer hover:bg-white/5"
-                  onClick={() => onOpenDetail(row.original)}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map((row) => {
+                const rowState = row.original.state
+                const tint =
+                  rowState === 'dead'
+                    ? 'border-l-2 border-l-red-500/60'
+                    : rowState === 'restarting'
+                      ? 'border-l-2 border-l-amber-500/60'
+                      : ''
+                return (
+                  <TableRow
+                    key={row.id}
+                    className={`cursor-pointer hover:bg-white/5 ${tint}`}
+                    onClick={() => onOpenDetail(row.original)}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                )
+              })
             )}
           </TableBody>
         </Table>
