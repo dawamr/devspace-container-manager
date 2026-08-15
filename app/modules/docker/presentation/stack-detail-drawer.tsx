@@ -65,6 +65,17 @@ export function StackDetailDrawer({ stackId, open, onOpenChange }: StackDetailDr
             <SheetTitle className="flex items-center gap-2">
               <Layers className="size-5 text-white/60" />
               {isLoading ? 'Loading…' : detail?.name ?? 'Stack'}
+              {detail?.type === 'custom' && (
+                <span
+                  className="rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                  style={{
+                    backgroundColor: detail.color ? `${detail.color}20` : 'rgba(255,255,255,0.1)',
+                    color: detail.color ?? 'rgba(255,255,255,0.6)',
+                  }}
+                >
+                  Custom
+                </span>
+              )}
             </SheetTitle>
             <SheetDescription>
               {detail ? `${detail.containerCount} containers` : 'Stack detail'}
@@ -165,7 +176,14 @@ export function StackDetailDrawer({ stackId, open, onOpenChange }: StackDetailDr
               <div className="flex flex-col gap-2">
                 <h3 className="text-sm font-medium text-white/70">Containers</h3>
                 {detail.containers.length === 0 ? (
-                  <p className="text-sm text-white/40">Tidak ada container dalam stack ini.</p>
+                  <div className="flex flex-col gap-2 rounded-[var(--glass-radius)] border border-[var(--glass-border)] bg-white/5 p-4">
+                    <p className="text-sm text-white/60">Tidak ada container dalam stack ini.</p>
+                    <p className="text-xs text-white/40">
+                      Container otomatis terdeteksi dari Docker Compose label
+                      <code className="mx-1 rounded bg-white/10 px-1 py-0.5 font-mono text-[10px]">com.docker.compose.project</code>
+                      yang cocok dengan nama stack.
+                    </p>
+                  </div>
                 ) : (
                   <div className="flex flex-col gap-1.5">
                     {detail.containers.map((c) => (

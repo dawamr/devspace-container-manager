@@ -29,6 +29,8 @@ export interface StackDetail {
   projectId: string
   containerCount: number
   isActive: boolean
+  type: 'auto' | 'custom'
+  color: string | null
   firstSeenAt: string
   lastSeenAt: string
   containers: StackContainerSummary[]
@@ -70,6 +72,8 @@ export const getStackDetailFn = createServerFn({ method: 'GET' })
       projectId: stack.projectId,
       containerCount: stack.containerCount,
       isActive: stack.isActive,
+      type: (stack.type ?? 'auto') as 'auto' | 'custom',
+      color: stack.color ?? null,
       firstSeenAt: stack.firstSeenAt.toISOString(),
       lastSeenAt: stack.lastSeenAt.toISOString(),
       containers: containers.map((c) => ({
