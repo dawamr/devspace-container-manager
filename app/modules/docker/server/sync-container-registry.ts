@@ -7,6 +7,7 @@ import {
 import {
   upsertStack,
 } from '../infrastructure/stack-registry-repository'
+import { normalizeHealth, mapPorts } from '../domain/docker-types'
 
 interface SyncResult {
   environmentId: string
@@ -49,6 +50,10 @@ export async function syncContainerRegistry(projectIds: string[]): Promise<SyncR
           environmentId: env.id,
           projectId: env.projectId,
           stackName: c.Labels?.['com.docker.compose.project'] ?? null,
+          status: c.Status,
+          health: normalizeHealth(c.Status ?? ''),
+          ports: mapPorts(c.Ports),
+          dockerCreatedAt: new Date(c.Created * 1000),
           isActive: true,
         })
 
