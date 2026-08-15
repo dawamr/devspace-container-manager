@@ -47,6 +47,17 @@ export function StackGridCard({ stack, environmentMap, onClick }: StackGridCardP
               )}
             />
             <span className="truncate text-sm font-medium text-white">{stack.name}</span>
+            {stack.type === 'custom' && (
+              <span
+                className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                style={{
+                  backgroundColor: stack.color ? `${stack.color}20` : 'rgba(255,255,255,0.1)',
+                  color: stack.color ?? 'rgba(255,255,255,0.6)',
+                }}
+              >
+                Custom
+              </span>
+            )}
           </div>
           <Layers className="size-4 shrink-0 text-white/40" />
         </div>

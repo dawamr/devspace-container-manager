@@ -63,7 +63,20 @@ export function StackTable({ stacks, environmentMap, onRowClick }: StackTablePro
                 onClick={() => onRowClick(stack)}
               >
                 <TableCell className="text-sm font-medium text-white">
-                  {stack.name}
+                  <span className="flex items-center gap-2">
+                    {stack.name}
+                    {stack.type === 'custom' && (
+                      <span
+                        className="inline-flex rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                        style={{
+                          backgroundColor: stack.color ? `${stack.color}20` : 'rgba(255,255,255,0.1)',
+                          color: stack.color ?? 'rgba(255,255,255,0.6)',
+                        }}
+                      >
+                        Custom
+                      </span>
+                    )}
+                  </span>
                 </TableCell>
                 <TableCell className="text-sm text-white/60">
                   {env?.projectName ?? 'Unknown'}

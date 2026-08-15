@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { RefreshCw, Layers, Plus, Search } from 'lucide-react'
+import { RefreshCw, Layers, Search } from 'lucide-react'
+import { CreateStackDialog } from '#/modules/docker/presentation/create-stack-dialog'
 
 import { listAllStacksFn, type GlobalStackSummary } from '#/modules/docker/server/list-all-stacks'
 import { listEnvironmentsMapFn, type EnvironmentMapEntry } from '#/modules/docker/server/list-environments-map'
@@ -105,10 +106,7 @@ function StacksPage() {
             <RefreshCw className={isFetching ? 'size-4 animate-spin' : 'size-4'} />
             Refresh
           </Button>
-          <Button size="sm">
-            <Plus className="size-4" />
-            Deploy
-          </Button>
+          <CreateStackDialog />
         </div>
       </header>
 

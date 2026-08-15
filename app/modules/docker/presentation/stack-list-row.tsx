@@ -42,6 +42,17 @@ export function StackListRow({ stack, environmentMap, onClick }: StackListRowPro
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className="truncate text-sm font-medium text-white">{stack.name}</span>
+            {stack.type === 'custom' && (
+              <span
+                className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                style={{
+                  backgroundColor: stack.color ? `${stack.color}20` : 'rgba(255,255,255,0.1)',
+                  color: stack.color ?? 'rgba(255,255,255,0.6)',
+                }}
+              >
+                Custom
+              </span>
+            )}
             <span className="shrink-0 text-xs text-white/40">
               {env?.projectName ?? 'Unknown'} / {env?.environmentName ?? 'Unknown'}
             </span>
