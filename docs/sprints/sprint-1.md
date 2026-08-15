@@ -14,14 +14,14 @@
 - Authentication flow paling sederhana yang stabil
 - Basic user + project model dengan Drizzle
 - Minimal RBAC (Admin/Developer/Viewer)
-- Portainer integration point pertama
+- Docker Engine connection point pertama
 
 ### Out of Scope (Deferred)
 - Container management (nanti)
 - Stack management (nanti)
 - Responsive UI polish
 - Activity log lengkap
-- Multi-portainer endpoint
+- Multi-docker host
 
 ## 📋 Selected Backlog
 
@@ -61,7 +61,7 @@
 | # | Risk | Type | Impact | Mitigation |
 |---|------|------|--------|-----------|
 | 1 | TanStack Start auth setup terlalu berat untuk MVP | Tech | Med | Gunakan simple cookie session dulu, upgrade nanti |
-| 2 | Portainer API auth (API key) belum setup | Dependency | High | Setup Portainer API key dulu sebelum integration |
+| 2 | Docker socket permission / TCP connection belum dikonfigurasi | Dependency | High | Setup Docker socket access (unix socket / TCP+TLS) sebelum Sprint 2 |
 | 3 | User tester tidak mau test auth flow | Validation | High | Siapkan 1-2 teman untuk test login hari ini |
 
 ## 📖 Learning Log (diisi akhir sprint)

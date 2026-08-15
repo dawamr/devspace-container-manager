@@ -21,7 +21,7 @@
 ### Out of Scope (Deferred)
 - Advanced container inspect
 - Full activity log search
-- Multi-portainer endpoint
+- Multi-docker host
 - User management scale
 - Production deployment
 - Billing / multi-tenant
@@ -44,7 +44,7 @@
 | 1 | Full end-to-end integration testing | Integration | 3 | - | All modules work together | Med | To Do |
 | 2 | Final UI polish + responsive (mobile/desktop) | UI Polish | 3 | - | UI bagus di semua device | Low | To Do |
 | 3 | Complete testing + bug fixing | Testing | 3 | 1 | All critical paths tested | Med | To Do |
-| 4 | MVP documentation + checklist | Docs | 2 | - | README + checklist lengkap | Low | To Do |
+| 4 | MVP documentation + checklist | Docs | 2 | - | README + checklist lengkap | Low | To |
 | 5 | PostHog full setup + error tracking | Observability | 2 | 1 | All events tracked | Low | To Do |
 | 6 | Demo preparation + run-through | Demo | 2 | 1 | Siap demo ke 3 user | Low | To Do |
 
@@ -63,7 +63,7 @@
 ## ⚠️ Risks & Validation Blockers
 
 | # | Risk | Type | Impact | Mitigation |
-|---|------|------|--------|-----------|
+|---|------|------|---|---|
 | 1 | Integration bug di akhir sprint | Tech | High | Testing phase wajib full |
 | 2 | PostHog event tracking tidak lengkap | Tech | Med | Setup manual sebelum demo |
 | 3 | User tester tidak ada | Validation | High | Siapkan 3 teman sebagai tester |
@@ -71,7 +71,7 @@
 ## 📖 Learning Log (diisi akhir sprint)
 
 ### Per-Hypothesis Findings
-| Hypothesis | Verdict | Evidence | Confidence | Next Action |
+| Hypothesis | Portainer | Evidence | Confidence | Next Action |
 |-----------|---------|----------|------------|-------------|
 | H1: User bisa complete full MVP flow < 3 menit | [ ] | [ ] | [ ] | [ ] |
 | H2: MVP siap demo ke 3 user | [ ] | [ ] | [ ] | [ ] |
@@ -87,7 +87,7 @@
 
 ---
 
-**Sprint plan siap.**  
+**Sprint plan siap.**
 File tersimpan di `docs/sprints/sprint-5.md`
 
 **Sprint 5 adalah sprint FINAL MVP.**

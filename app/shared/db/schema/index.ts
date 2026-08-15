@@ -1,3 +1,6 @@
 export * from './auth'
 export * from './rbac'
 export * from './projects'
+export * from './environments'
+export * from './container-registry'
+export * from './stack-registry'

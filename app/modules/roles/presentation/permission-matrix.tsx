@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { listPermissionsFn } from '../server/list-permissions'
 import { updateRolePermissionsFn } from '../server/update-role-permissions'
-import { getRolePermissions } from '../domain/role-service'
+import { getRolePermissionsFn } from '../server/get-role-permissions'
 import { captureEvent } from '#/shared/lib/posthog'
 import { Button } from '#/shared/ui/button'
 import { Checkbox } from '#/shared/ui/checkbox'
@@ -40,7 +40,7 @@ export function PermissionMatrix({ open, onOpenChange, role }: PermissionMatrixP
 
   useEffect(() => {
     if (role && open) {
-      getRolePermissions(role.id).then((ids) => {
+      getRolePermissionsFn({ data: { roleId: role.id } }).then((ids) => {
         setSelectedIds(new Set(ids))
       })
     }

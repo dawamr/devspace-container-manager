@@ -12,14 +12,14 @@ import { Button } from '#/shared/ui/button'
 import { PageHeader } from '#/shared/ui/glass-card'
 
 export const Route = createFileRoute(
-  '/_dashboard/projects/$projectId/environments/$environmentId/containers',
+  '/_dashboard/configuration/projects/$projectId/environments/$environmentId/containers',
 )({
   component: ContainersPage,
 })
 
 function ContainersPage() {
   const { projectId, environmentId } = useParams({
-    from: '/_dashboard/projects/$projectId/environments/$environmentId/containers',
+    from: '/_dashboard/configuration/projects/$projectId/environments/$environmentId/containers',
   })
 
   // Sprint 2 / H1: time from route entry to environment selection.
@@ -53,7 +53,7 @@ function ContainersPage() {
   return (
     <div className="flex flex-col gap-6">
       <Link
-        to="/projects"
+        to="/configuration/projects"
         className="inline-flex w-fit items-center gap-1 text-sm text-white/60 hover:text-white"
       >
         <ArrowLeft className="size-4" />
@@ -80,7 +80,7 @@ function ContainersPage() {
           >
             <RotateCw className={`size-4 ${isFetching ? 'animate-spin' : ''}`} />
           </Button>
-          <Link to="/projects">
+          <Link to="/configuration/projects">
             <Button variant="secondary">Project</Button>
           </Link>
         </div>

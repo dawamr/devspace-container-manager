@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
 import { db } from '#/shared/db/client'
-import { projects } from '#/shared/db/schema'
+import { projects, projectMembers } from '#/shared/db/schema'
 
 export type ProjectRow = typeof projects.$inferSelect
 export type ProjectInsert = typeof projects.$inferInsert
@@ -30,4 +30,11 @@ export async function updateProject(id: string, data: Partial<ProjectInsert>) {
 
 export async function deleteProject(id: string) {
   await db.delete(projects).where(eq(projects.id, id))
+}
+
+export async function findProjectsByMemberId(userId: string) {
+  return db
+    .select({ projectId: projectMembers.projectId })
+    .from(projectMembers)
+    .where(eq(projectMembers.userId, userId))
 }

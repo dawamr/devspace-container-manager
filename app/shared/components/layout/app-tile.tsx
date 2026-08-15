@@ -12,10 +12,10 @@ export interface AppTileConfig {
   description: string
   href: RoutePath
   icon: LucideIcon
-  accent: Accent
+  accent?: Accent
 }
 
-export function AppTile({ title, description, href, icon: Icon, accent }: AppTileConfig) {
+export function AppTile({ title, description, href, icon: Icon, accent = 'primary' }: AppTileConfig) {
   const styles = ACCENT_STYLES[accent]
 
   return (

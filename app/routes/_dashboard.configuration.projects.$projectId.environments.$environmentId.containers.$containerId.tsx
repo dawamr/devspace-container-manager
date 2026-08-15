@@ -10,14 +10,14 @@ import { Badge } from '#/shared/ui/badge'
 import { cn } from '#/shared/lib/cn'
 
 export const Route = createFileRoute(
-  '/_dashboard/projects/$projectId/environments/$environmentId/containers/$containerId',
+  '/_dashboard/configuration/projects/$projectId/environments/$environmentId/containers/$containerId',
 )({
   component: ContainerDetailLayout,
 })
 
 function ContainerDetailLayout() {
   const { projectId, environmentId, containerId } = useParams({
-    from: '/_dashboard/projects/$projectId/environments/$environmentId/containers/$containerId',
+    from: '/_dashboard/configuration/projects/$projectId/environments/$environmentId/containers/$containerId',
   })
 
   const { data: detail } = useQuery({
@@ -32,7 +32,7 @@ function ContainerDetailLayout() {
   return (
     <div className="flex flex-col gap-6">
       <Link
-        to="/projects/$projectId/environments/$environmentId/containers"
+        to="/configuration/projects/$projectId/environments/$environmentId/containers"
         params={{ projectId, environmentId }}
         className="inline-flex w-fit items-center gap-1 text-sm text-white/60 hover:text-white"
       >
@@ -63,7 +63,7 @@ function ContainerDetailLayout() {
             asChild
           >
             <Link
-              to="/projects/$projectId/environments/$environmentId/containers/$containerId/logs"
+              to="/configuration/projects/$projectId/environments/$environmentId/containers/$containerId/logs"
               params={{ projectId, environmentId, containerId }}
             >
               Logs
@@ -78,7 +78,7 @@ function ContainerDetailLayout() {
             asChild
           >
             <Link
-              to="/projects/$projectId/environments/$environmentId/containers/$containerId/inspect"
+              to="/configuration/projects/$projectId/environments/$environmentId/containers/$containerId/inspect"
               params={{ projectId, environmentId, containerId }}
             >
               Inspect

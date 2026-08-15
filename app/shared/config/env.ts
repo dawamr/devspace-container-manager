@@ -2,8 +2,8 @@ import 'dotenv/config'
 import { z } from 'zod'
 
 const envSchema = z.object({
-  PORTAINER_URL: z.string().url(),
-  PORTAINER_API_KEY: z.string().min(1),
+  DOCKER_HOST: z.string().default('unix:///var/run/docker.sock'),
+  DOCKER_CERT_PATH: z.string().optional(),
   DATABASE_URL: z.string().min(1),
   SESSION_SECRET: z.string().min(1),
 })

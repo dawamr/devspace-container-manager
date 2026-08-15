@@ -22,7 +22,7 @@
 - Full container inspect editor
 - Advanced logs filtering
 - Multi-user demo
-- Portainer endpoint management
+- Docker host management
 
 ## 📋 Selected Backlog
 

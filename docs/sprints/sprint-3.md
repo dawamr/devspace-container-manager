@@ -14,7 +14,7 @@
 ### Learning Objective
 - Stack model dengan Docker Compose configuration
 - Simple compose editor / upload
-- Stack deploy dan update via Portainer API
+- Stack deploy dan update via Docker Compose v2 (CLI exec)
 - Basic activity log untuk stack operations
 
 ### Out of Scope (Deferred)
@@ -32,7 +32,7 @@
 | 2 | Simple Docker Compose editor / upload | Tanpa editor, tidak ada deploy | ✅ IN |
 | 3 | Stack Deploy / Update API | Tanpa deploy, tidak ada operational value | ✅ IN |
 | 4 | Basic activity log untuk stack | Tanpa log, tidak bisa audit | ✅ IN |
-| 5 | Portainer Stack integration | Tanpa integration, tidak bisa deploy | ✅ IN |
+| 5 | Docker Compose v2 integration (project deploy via `docker compose up`) | Tanpa integration, tidak bisa deploy | ✅ IN |
 | 6 | PostHog tracking untuk stack deploy | Tanpa measure, tidak bisa belajar | ✅ IN |
 
 ## 🔧 Task Breakdown
@@ -41,7 +41,7 @@
 |---|------|-------|-----------|------|---------|------|--------|
 | 1 | Stack model + Drizzle migration + CRUD API | Stack | 3 | - | Stack table + create/read | Low | To Do |
 | 2 | Simple compose editor (textarea + preview) | Compose | 3 | 1 | User bisa input compose dan save | Med | To Do |
-| 3 | Stack deploy/update via Portainer API | Deploy | 3 | 2 | Deploy works and stack appears in list | Med | To Do |
+| 3 | Stack deploy/update via Docker Compose v2 (`docker compose up -d` / `down`) | Deploy | 3 | 2 | Deploy works and stack appears in list | Med | To Do |
 | 4 | Basic activity log for stack operations | Activity | 2 | 1 | Log entries created for deploy | Low | To Do |
 | 5 | Error handling for stack deploy | Error | 2 | 3 | API error shows message | Low | To Do |
 | 6 | Add PostHog events for stack deploy and update | Measure | 1 | 1 | Events logged with duration | Low | To Do |
@@ -50,7 +50,7 @@
 
 ## ✅ Definition of Done (MVP)
 - Stack creation dan compose config berhasil
-- Stack bisa di-deploy dan muncul di list
+- Stack bisa di-deploy via Docker Compose v2 dan muncul di list
 - Basic activity log untuk deploy
 - Metric stack deploy terukur via PostHog
 - Bisa di-demo ke 1 user tanpa error
@@ -61,7 +61,7 @@
 
 | # | Risk | Type | Impact | Mitigation |
 |---|------|------|--------|-----------|
-| 1 | Portainer Stack API permission terbatas | Dependency | High | Setup dengan user yang punya akses stack |
+| 1 | Docker Compose v2 plugin tidak tersedia di host | Dependency | High | Verifikasi `docker compose version` sebelum Sprint 2 selesai |
 | 2 | Compose editor terlalu sederhana | Tech | Med | Gunakan textarea biasa dulu |
 | 3 | User tester tidak mau test deploy | Validation | High | Siapkan test manual di staging |
 

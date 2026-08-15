@@ -1,0 +1,2 @@
+ALTER TABLE "container_registry" ADD CONSTRAINT "container_registry_container_id_environment_id_unique" UNIQUE("container_id","environment_id");--> statement-breakpoint
+ALTER TABLE "stack_registry" ADD CONSTRAINT "stack_registry_name_environment_id_unique" UNIQUE("name","environment_id");
