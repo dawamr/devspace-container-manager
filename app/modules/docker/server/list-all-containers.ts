@@ -51,7 +51,7 @@ export const listAllContainersFn = createServerFn({ method: 'GET' })
     })
 
     return rows.map((r) => ({
-      id: r.id,
+      id: r.containerId,
       containerId: r.containerId,
       name: r.name,
       image: r.image,
