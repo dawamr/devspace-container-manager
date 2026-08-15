@@ -97,3 +97,19 @@ export async function markInactiveNotSeenSince(
     )
     .execute()
 }
+
+export async function findContainersByStack(
+  environmentId: string,
+  stackName: string,
+): Promise<ContainerRegistryRow[]> {
+  return db
+    .select()
+    .from(containerRegistry)
+    .where(
+      and(
+        eq(containerRegistry.environmentId, environmentId),
+        eq(containerRegistry.stackName, stackName),
+      ),
+    )
+    .orderBy(containerRegistry.name)
+}

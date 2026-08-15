@@ -54,3 +54,12 @@ export async function updateContainerCount(id: string, count: number): Promise<v
     .where(eq(stackRegistry.id, id))
     .execute()
 }
+
+export async function findStackById(id: string): Promise<StackRegistryRow | null> {
+  const rows = await db
+    .select()
+    .from(stackRegistry)
+    .where(eq(stackRegistry.id, id))
+    .limit(1)
+  return rows[0] ?? null
+}
