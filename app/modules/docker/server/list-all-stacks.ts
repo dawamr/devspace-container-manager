@@ -15,6 +15,9 @@ export interface GlobalStackSummary {
   environmentId: string
   projectId: string
   isActive: boolean
+  type: 'auto' | 'custom'
+  description: string | null
+  color: string | null
   lastSeenAt: string
 }
 
@@ -48,6 +51,9 @@ export const listAllStacksFn = createServerFn({ method: 'GET' })
       environmentId: r.environmentId,
       projectId: r.projectId,
       isActive: r.isActive,
+      type: (r.type ?? 'auto') as 'auto' | 'custom',
+      description: r.description ?? null,
+      color: r.color ?? null,
       lastSeenAt: r.lastSeenAt.toISOString(),
     }))
   })
