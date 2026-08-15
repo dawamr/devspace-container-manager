@@ -7,6 +7,7 @@ import { findAccessibleProjectIds } from '#/modules/projects/server/accessible-p
 import { findByProjectIds } from '../infrastructure/container-registry-repository'
 import { syncContainerRegistry } from './sync-container-registry'
 import { captureServerEvent } from '#/shared/lib/posthog-server'
+import type { ContainerHealth } from '#/modules/docker/domain/docker-types'
 
 export interface GlobalContainerSummary {
   id: string
@@ -14,6 +15,10 @@ export interface GlobalContainerSummary {
   name: string
   image: string
   state: string
+  health: ContainerHealth
+  status: string
+  createdAt: string
+  ports: string[]
   stackName: string | null
   environmentId: string
   projectId: string
@@ -51,6 +56,10 @@ export const listAllContainersFn = createServerFn({ method: 'GET' })
       name: r.name,
       image: r.image,
       state: r.isActive ? 'running' : 'stopped',
+      health: (r.health ?? 'none') as ContainerHealth,
+      status: r.status ?? '',
+      createdAt: r.dockerCreatedAt?.toISOString() ?? r.lastSeenAt.toISOString(),
+      ports: (r.ports ?? []) as string[],
       stackName: r.stackName,
       environmentId: r.environmentId,
       projectId: r.projectId,
