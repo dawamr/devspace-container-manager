@@ -102,13 +102,17 @@ function errorMessage(err: unknown): string {
   return userFriendlyDockerMessage(err) || message || 'Aksi gagal. Coba lagi.'
 }
 
-const columnHelper = createColumnHelper<ContainerSummary>()
+type ContainerTableRow = ContainerSummary & { environmentId?: string }
+
+const columnHelper = createColumnHelper<ContainerTableRow>()
 
 interface ContainerTableProps {
-  containers: ContainerSummary[]
+  containers: ContainerTableRow[]
   environmentId: string
   onOpenDetail: (container: ContainerSummary) => void
   onRefresh?: () => void
+  isGlobal?: boolean
+  environments?: Map<string, { name: string; projectName: string }>
 }
 
 function SortHeader({
@@ -202,7 +206,7 @@ function ContainerNameCell({ name, image }: { name: string; image: string }) {
   )
 }
 
-export function ContainerTable({ containers, environmentId, onOpenDetail, onRefresh }: ContainerTableProps) {
+export function ContainerTable({ containers, environmentId, onOpenDetail, onRefresh, isGlobal, environments }: ContainerTableProps) {
   const queryClient = useQueryClient()
   const [pendingId, setPendingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -317,7 +321,7 @@ export function ContainerTable({ containers, environmentId, onOpenDetail, onRefr
     })
   }
 
-  const columns = useMemo<ColumnDef<ContainerSummary, any>[]>(() => [
+  const columns = useMemo<ColumnDef<ContainerTableRow, any>[]>(() => [
       columnHelper.display({
         id: 'select',
         header: ({ table }) => (
@@ -347,6 +351,22 @@ export function ContainerTable({ containers, environmentId, onOpenDetail, onRefr
           <ContainerNameCell name={info.getValue()} image={info.row.original.image} />
         ),
       }),
+      ...(isGlobal
+        ? ([
+            columnHelper.accessor('environmentId', {
+              header: ({ column }) => <SortHeader label="Environment" column={column} />,
+              cell: (info) => environments?.get(info.getValue() ?? '')?.name ?? '—',
+            }),
+            columnHelper.accessor(
+              (row) => environments?.get(row.environmentId ?? '')?.projectName ?? '',
+              {
+                id: 'project',
+                header: ({ column }) => <SortHeader label="Project" column={column} />,
+                cell: (info) => info.getValue() || '—',
+              },
+            ),
+          ] as ColumnDef<ContainerTableRow, any>[])
+        : []),
       columnHelper.accessor('state', {
         header: ({ column }) => <SortHeader label="State" column={column} />,
         filterFn: 'equalsString',
@@ -466,7 +486,7 @@ export function ContainerTable({ containers, environmentId, onOpenDetail, onRefr
         },
       }),
     ],
-    [pendingId, startMutation, stopMutation, restartMutation, removeMutation],
+    [pendingId, startMutation, stopMutation, restartMutation, removeMutation, isGlobal, environments],
   )
 
   const table = useReactTable({
