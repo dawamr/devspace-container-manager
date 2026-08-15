@@ -10,6 +10,7 @@ import { StackGroupControl, type StackGroupBy } from '#/modules/docker/presentat
 import { StackGridCard } from '#/modules/docker/presentation/stack-grid-card'
 import { StackTable } from '#/modules/docker/presentation/stack-table'
 import { StackListRow } from '#/modules/docker/presentation/stack-list-row'
+import { StackDetailDrawer } from '#/modules/docker/presentation/stack-detail-drawer'
 import { Button } from '#/shared/ui/button'
 import { cn } from '#/shared/lib/cn'
 
@@ -24,6 +25,13 @@ function StacksPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [groupBy, setGroupBy] = useState<StackGroupBy>('none')
   const [viewMode, setViewMode] = useState<StackViewMode>('grid')
+  const [selectedStackId, setSelectedStackId] = useState<string | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+
+  const handleStackClick = (stack: GlobalStackSummary) => {
+    setSelectedStackId(stack.id)
+    setDrawerOpen(true)
+  }
 
   const { data: stacks, isLoading, isFetching, refetch } = useQuery({
     queryKey: ['all-stacks'],
@@ -171,7 +179,7 @@ function StacksPage() {
                       key={stack.id}
                       stack={stack}
                       environmentMap={environmentMap}
-                      onClick={() => {}}
+                      onClick={() => handleStackClick(stack)}
                     />
                   ))}
                 </div>
@@ -181,7 +189,7 @@ function StacksPage() {
                 <StackTable
                   stacks={group.stacks}
                   environmentMap={environmentMap}
-                  onRowClick={() => {}}
+                  onRowClick={handleStackClick}
                 />
               )}
 
@@ -192,7 +200,7 @@ function StacksPage() {
                       key={stack.id}
                       stack={stack}
                       environmentMap={environmentMap}
-                      onClick={() => {}}
+                      onClick={() => handleStackClick(stack)}
                     />
                   ))}
                 </div>
@@ -201,6 +209,12 @@ function StacksPage() {
           ))}
         </div>
       )}
+
+      <StackDetailDrawer
+        stackId={selectedStackId}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+      />
     </div>
   )
 }
