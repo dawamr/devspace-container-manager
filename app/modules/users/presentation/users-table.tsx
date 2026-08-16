@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { listUsersFn } from '../server/list-users'
 import { deleteUserFn } from '../server/delete-user'
 import { UserFormDialog } from './user-form-dialog'
+import { WorkspaceAssignmentDialog } from './workspace-assignment-dialog'
 import { Button } from '#/shared/ui/button'
 import { Badge } from '#/shared/ui/badge'
 import { Input } from '#/shared/ui/input'
@@ -22,7 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '#/shared/ui/dialog'
-import { Plus, Search, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, FolderCog } from 'lucide-react'
 import { captureEvent } from '#/shared/lib/posthog'
 
 type User = Awaited<ReturnType<typeof listUsersFn>>[number]
@@ -36,6 +37,7 @@ export function UsersTable() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editUser, setEditUser] = useState<User | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [assignmentUser, setAssignmentUser] = useState<{ id: string; name: string } | null>(null)
   const queryClient = useQueryClient()
 
   useEffect(() => {
@@ -136,6 +138,14 @@ export function UsersTable() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        title="Manage Workspaces"
+                        onClick={() => setAssignmentUser({ id: user.id, name: user.name })}
+                      >
+                        <FolderCog className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => {
                           setEditUser(user)
                           setDialogOpen(true)
@@ -184,6 +194,15 @@ export function UsersTable() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      )}
+
+      {assignmentUser && (
+        <WorkspaceAssignmentDialog
+          userId={assignmentUser.id}
+          userName={assignmentUser.name}
+          open={!!assignmentUser}
+          onOpenChange={(o) => !o && setAssignmentUser(null)}
+        />
       )}
     </div>
   )
