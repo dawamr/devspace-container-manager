@@ -4,15 +4,15 @@ import { roles, permissions, rolePermissions, users } from './schema'
 import { hashPassword } from '#/shared/lib/crypto'
 
 const RESOURCES = ['users', 'projects', 'environments', 'stacks', 'containers', 'logs'] as const
-const ACTIONS = ['create', 'read', 'update', 'delete'] as const
+const ACTIONS = ['create', 'read', 'update', 'delete', 'assign'] as const
 
-const PERMISSION_MATRIX: Record<string, Record<string, ('create' | 'read' | 'update' | 'delete')[]>> = {
+const PERMISSION_MATRIX: Record<string, Record<string, ('create' | 'read' | 'update' | 'delete' | 'assign')[]>> = {
   admin: {
     users: ['create', 'read', 'update', 'delete'],
     projects: ['create', 'read', 'update', 'delete'],
     environments: ['create', 'read', 'update', 'delete'],
     stacks: ['create', 'read', 'update', 'delete'],
-    containers: ['create', 'read', 'update', 'delete'],
+    containers: ['create', 'read', 'update', 'delete', 'assign'],
     logs: ['read'],
   },
   developer: {
@@ -20,7 +20,7 @@ const PERMISSION_MATRIX: Record<string, Record<string, ('create' | 'read' | 'upd
     projects: ['read'],
     environments: ['read'],
     stacks: ['create', 'read', 'update', 'delete'],
-    containers: ['create', 'read', 'update', 'delete'],
+    containers: ['create', 'read', 'update', 'delete', 'assign'],
     logs: ['read'],
   },
   viewer: {

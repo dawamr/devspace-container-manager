@@ -18,6 +18,7 @@ export const ACTIONS = {
   READ: 'read',
   UPDATE: 'update',
   DELETE: 'delete',
+  ASSIGN: 'assign',
 } as const
 
 export type Resource = (typeof RESOURCES)[keyof typeof RESOURCES]

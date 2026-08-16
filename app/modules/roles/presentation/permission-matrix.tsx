@@ -26,7 +26,7 @@ type PermissionMatrixProps = {
 }
 
 const RESOURCES = ['users', 'projects', 'environments', 'stacks', 'containers', 'logs'] as const
-const ACTIONS = ['create', 'read', 'update', 'delete'] as const
+const ACTIONS = ['create', 'read', 'update', 'delete', 'assign'] as const
 
 export function PermissionMatrix({ open, onOpenChange, role }: PermissionMatrixProps) {
   const { data: permissions } = useQuery({
