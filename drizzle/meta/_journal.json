@@ -50,6 +50,13 @@
       "when": 1786795560535,
       "tag": "0006_windy_strong_guy",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1786803772176,
+      "tag": "0007_volatile_captain_britain",
+      "breakpoints": true
     }
   ]
 }
