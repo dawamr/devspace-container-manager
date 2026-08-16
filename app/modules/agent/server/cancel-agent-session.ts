@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { requirePermission } from '#/modules/rbac/server/require-permission'
 import { RESOURCES, ACTIONS } from '#/modules/rbac/domain/constants'
 import { findSessionById, updateSession } from '#/modules/agent/infrastructure/agent-session-repository'
+import { abortSession } from './abort-registry'
 
 const CancelSessionInput = z.object({
   sessionId: z.string().uuid(),
@@ -18,6 +19,7 @@ export const cancelAgentSessionFn = createServerFn({ method: 'POST' })
     if (!session) throw new Error('Session not found')
     if (session.userId !== user.id) throw new Error('FORBIDDEN: Session belongs to another user')
 
+    const aborted = abortSession(data.sessionId)
     await updateSession(session.id, { status: 'cancelled', endedAt: new Date() })
-    return { success: true }
+    return { success: true, aborted }
   })

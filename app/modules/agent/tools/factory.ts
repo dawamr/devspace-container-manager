@@ -1,3 +1,4 @@
+import { toJSONSchema } from 'zod'
 import type { ToolDefinition } from '#/modules/agent/domain/agent-types'
 import { readFileTool } from './read-file'
 import { writeFileTool } from './write-file'
@@ -19,7 +20,10 @@ export function getToolSchemas(): Record<string, { description: string; paramete
   return Object.fromEntries(
     agentTools.map((tool) => [
       tool.name,
-      { description: tool.description, parameters: tool.parameters },
+      {
+        description: tool.description,
+        parameters: toJSONSchema(tool.parameters),
+      },
     ]),
   )
 }

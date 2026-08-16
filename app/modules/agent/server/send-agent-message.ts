@@ -5,6 +5,7 @@ import { requirePermission } from '#/modules/rbac/server/require-permission'
 import { RESOURCES, ACTIONS } from '#/modules/rbac/domain/constants'
 import { findSessionById, updateSession } from '#/modules/agent/infrastructure/agent-session-repository'
 import { runAgentLoop } from './run-agent-loop'
+import { registerController, unregisterController } from './abort-registry'
 
 const SendMessageInput = z.object({
   sessionId: z.string().uuid(),
@@ -23,6 +24,7 @@ export const sendAgentMessageFn = createServerFn({ method: 'POST' })
 
     const events: string[] = []
     const controller = new AbortController()
+    registerController(session.id, controller)
 
     try {
       await runAgentLoop(
@@ -40,6 +42,8 @@ export const sendAgentMessageFn = createServerFn({ method: 'POST' })
     } catch (err) {
       events.push(`data: ${JSON.stringify({ type: 'error', message: err instanceof Error ? err.message : String(err) })}\n\n`)
       await updateSession(session.id, { status: 'error', endedAt: new Date() })
+    } finally {
+      unregisterController(session.id)
     }
 
     return { events }
