@@ -22,13 +22,20 @@ import {
 import { cn } from '#/shared/lib/cn'
 import type { ContainerSummary, ContainerDetail } from '#/modules/docker/domain/docker-types'
 import { inspectContainerFn } from '#/modules/docker/server/inspect-container'
+import { listContainerAssigneesFn } from '#/modules/docker/server/list-container-assignees'
 import { HealthBadge } from '#/modules/docker/presentation/container-health-badge'
+import { ContainerAssigneeBadges } from '#/modules/docker/presentation/container-assignee-badges'
+import { ContainerAssignDialog } from '#/modules/docker/presentation/container-assign-dialog'
+import { ContainerLogsViewer } from '#/modules/docker/presentation/container-logs-viewer'
+import { ContainerStatsViewer } from '#/modules/docker/presentation/container-stats-viewer'
 
 interface ContainerDetailDrawerProps {
   environmentId: string
   container: ContainerSummary | null
   open: boolean
   onOpenChange: (open: boolean) => void
+  registryId?: string
+  canAssign?: boolean
 }
 
 function StatField({ label, children }: { label: string; children: React.ReactNode }) {
@@ -53,8 +60,11 @@ export function ContainerDetailDrawer({
   container,
   open,
   onOpenChange,
+  registryId,
+  canAssign = true,
 }: ContainerDetailDrawerProps) {
   const [showSecrets, setShowSecrets] = useState(false)
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false)
 
   const { data: detail, isLoading } = useQuery({
     queryKey: ['container-detail', environmentId, container?.id],
@@ -63,6 +73,12 @@ export function ContainerDetailDrawer({
         data: { environmentId, containerId: container!.id },
       }) as Promise<ContainerDetail>,
     enabled: open && !!container,
+  })
+
+  const { data: assignees = [] } = useQuery({
+    queryKey: ['container-assignees', registryId],
+    queryFn: () => listContainerAssigneesFn({ data: { containerRegistryId: registryId! } }),
+    enabled: open && !!registryId,
   })
 
   return (
@@ -77,6 +93,58 @@ export function ContainerDetailDrawer({
             {container?.id ?? ''}
           </SheetDescription>
         </SheetHeader>
+
+        {/* Assignees section */}
+        {registryId && (
+          <div className="border-b px-4 py-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium uppercase tracking-wider text-white/40">
+                Assignees
+              </span>
+              {canAssign && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => setAssignDialogOpen(true)}
+                >
+                  Manage
+                </Button>
+              )}
+            </div>
+            {assignees.length > 0 ? (
+              <div className="mt-2 space-y-1.5">
+                {assignees.map((a) => (
+                  <div key={a.userId} className="flex items-center gap-2">
+                    <ContainerAssigneeBadges
+                      assignees={[a]}
+                      onClick={canAssign ? () => setAssignDialogOpen(true) : undefined}
+                    />
+                    <span
+                      className={cn(
+                        'rounded border px-1.5 py-0.5 text-[10px] font-medium capitalize',
+                        a.role === 'owner'
+                          ? 'border-amber-500/20 bg-amber-500/15 text-amber-300'
+                          : a.role === 'operator'
+                            ? 'border-blue-500/20 bg-blue-500/15 text-blue-300'
+                            : 'border-white/10 bg-white/10 text-white/50',
+                      )}
+                    >
+                      {a.role}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-2">
+                <ContainerAssigneeBadges
+                  assignees={[]}
+                  onClick={canAssign ? () => setAssignDialogOpen(true) : undefined}
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         {isLoading ? (
           <div className="flex flex-1 items-center justify-center py-12 text-sm text-muted-foreground">
@@ -115,6 +183,24 @@ export function ContainerDetailDrawer({
                 )}
               >
                 Environment
+              </Tabs.Trigger>
+              <Tabs.Trigger
+                value="logs"
+                className={cn(
+                  'rounded-t-md px-3 py-1.5 text-sm font-medium text-muted-foreground',
+                  'data-[state=active]:bg-muted data-[state=active]:text-foreground',
+                )}
+              >
+                Logs
+              </Tabs.Trigger>
+              <Tabs.Trigger
+                value="stats"
+                className={cn(
+                  'rounded-t-md px-3 py-1.5 text-sm font-medium text-muted-foreground',
+                  'data-[state=active]:bg-muted data-[state=active]:text-foreground',
+                )}
+              >
+                Stats
               </Tabs.Trigger>
             </Tabs.List>
 
@@ -238,7 +324,35 @@ export function ContainerDetailDrawer({
                 )}
               </div>
             </Tabs.Content>
+
+            <Tabs.Content
+              value="logs"
+              className="flex flex-1 flex-col overflow-hidden data-[state=inactive]:hidden"
+            >
+              <div className="flex-1 overflow-y-auto p-4">
+                <ContainerLogsViewer environmentId={environmentId} containerId={container!.id} />
+              </div>
+            </Tabs.Content>
+
+            <Tabs.Content
+              value="stats"
+              className="flex flex-1 flex-col overflow-hidden data-[state=inactive]:hidden"
+            >
+              <div className="flex-1 overflow-y-auto p-4">
+                <ContainerStatsViewer environmentId={environmentId} containerId={container!.id} />
+              </div>
+            </Tabs.Content>
           </Tabs.Root>
+        )}
+
+        {/* Assign dialog */}
+        {registryId && container && canAssign && (
+          <ContainerAssignDialog
+            containerRegistryId={registryId}
+            containerName={container.name}
+            open={assignDialogOpen}
+            onOpenChange={setAssignDialogOpen}
+          />
         )}
       </SheetContent>
     </Sheet>

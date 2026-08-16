@@ -21,6 +21,8 @@ interface ContainerBulkToolbarProps {
   selectedIds: string[]
   environmentId: string
   onClear: () => void
+  canManage?: boolean
+  canDelete?: boolean
 }
 
 type BulkAction = 'start' | 'stop' | 'restart' | 'remove'
@@ -38,7 +40,7 @@ function errorMessage(err: unknown): string {
   return userFriendlyDockerMessage(err) || message || 'Aksi gagal. Coba lagi.'
 }
 
-export function ContainerBulkToolbar({ selectedIds, environmentId, onClear }: ContainerBulkToolbarProps) {
+export function ContainerBulkToolbar({ selectedIds, environmentId, onClear, canManage = true, canDelete = true }: ContainerBulkToolbarProps) {
   const queryClient = useQueryClient()
   const [pendingAction, setPendingAction] = useState<BulkAction | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -102,65 +104,73 @@ export function ContainerBulkToolbar({ selectedIds, environmentId, onClear }: Co
         </span>
 
         <div className="ml-auto flex flex-wrap items-center gap-1.5">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={ACTION_BTN_CLASS}
-            disabled={isBusy}
-            onClick={() => handleAction('start')}
-          >
-            {pendingAction === 'start' && isBusy ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Play className="size-4" />
-            )}
-            <span className="hidden sm:inline">Start</span>
-          </Button>
+          {canManage && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className={ACTION_BTN_CLASS}
+              disabled={isBusy}
+              onClick={() => handleAction('start')}
+            >
+              {pendingAction === 'start' && isBusy ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Play className="size-4" />
+              )}
+              <span className="hidden sm:inline">Start</span>
+            </Button>
+          )}
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className={ACTION_BTN_CLASS}
-            disabled={isBusy}
-            onClick={() => handleAction('stop')}
-          >
-            {pendingAction === 'stop' && isBusy ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Square className="size-4" />
-            )}
-            <span className="hidden sm:inline">Stop</span>
-          </Button>
+          {canManage && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className={ACTION_BTN_CLASS}
+              disabled={isBusy}
+              onClick={() => handleAction('stop')}
+            >
+              {pendingAction === 'stop' && isBusy ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Square className="size-4" />
+              )}
+              <span className="hidden sm:inline">Stop</span>
+            </Button>
+          )}
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className={ACTION_BTN_CLASS}
-            disabled={isBusy}
-            onClick={() => handleAction('restart')}
-          >
-            {pendingAction === 'restart' && isBusy ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <RotateCw className="size-4" />
-            )}
-            <span className="hidden sm:inline">Restart</span>
-          </Button>
+          {canManage && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className={ACTION_BTN_CLASS}
+              disabled={isBusy}
+              onClick={() => handleAction('restart')}
+            >
+              {pendingAction === 'restart' && isBusy ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <RotateCw className="size-4" />
+              )}
+              <span className="hidden sm:inline">Restart</span>
+            </Button>
+          )}
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn(ACTION_BTN_CLASS, 'hover:border-red-500/50 hover:text-red-300')}
-            disabled={isBusy}
-            onClick={() => handleAction('remove')}
-          >
-            {pendingAction === 'remove' && isBusy ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Trash2 className="size-4" />
-            )}
-            <span className="hidden sm:inline">Remove</span>
-          </Button>
+          {canDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(ACTION_BTN_CLASS, 'hover:border-red-500/50 hover:text-red-300')}
+              disabled={isBusy}
+              onClick={() => handleAction('remove')}
+            >
+              {pendingAction === 'remove' && isBusy ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Trash2 className="size-4" />
+              )}
+              <span className="hidden sm:inline">Remove</span>
+            </Button>
+          )}
 
           <div className="mx-1 h-5 w-px bg-[var(--glass-border)]" />
 

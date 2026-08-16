@@ -91,7 +91,7 @@ export function StackDetailDrawer({ stackId, open, onOpenChange }: StackDetailDr
               {/* Metadata */}
               <dl className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <dt className="text-xs font-medium uppercase tracking-wide text-white/40">
+                  <dt className="border-l-2 border-[var(--glass-border)] pl-2 text-xs font-medium uppercase tracking-wide text-white/40">
                     Status
                   </dt>
                   <dd>
@@ -107,19 +107,19 @@ export function StackDetailDrawer({ stackId, open, onOpenChange }: StackDetailDr
                   </dd>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <dt className="text-xs font-medium uppercase tracking-wide text-white/40">
+                  <dt className="border-l-2 border-[var(--glass-border)] pl-2 text-xs font-medium uppercase tracking-wide text-white/40">
                     Containers
                   </dt>
                   <dd className="text-sm tabular-nums text-white">{detail.containerCount}</dd>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <dt className="text-xs font-medium uppercase tracking-wide text-white/40">
+                  <dt className="border-l-2 border-[var(--glass-border)] pl-2 text-xs font-medium uppercase tracking-wide text-white/40">
                     First Seen
                   </dt>
                   <dd className="text-sm text-white/70">{formatDate(detail.firstSeenAt)}</dd>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <dt className="text-xs font-medium uppercase tracking-wide text-white/40">
+                  <dt className="border-l-2 border-[var(--glass-border)] pl-2 text-xs font-medium uppercase tracking-wide text-white/40">
                     Last Sync
                   </dt>
                   <dd className="text-sm text-white/70">{formatDate(detail.lastSeenAt)}</dd>

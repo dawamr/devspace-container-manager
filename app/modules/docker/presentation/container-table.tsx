@@ -56,6 +56,8 @@ import {
 } from '#/shared/ui/tooltip'
 import { ContainerSummaryBar } from './container-summary-bar'
 import { ContainerBulkToolbar } from './container-bulk-toolbar'
+import { ContainerAssigneeBadges } from './container-assignee-badges'
+import type { ContainerAssignee } from '#/modules/docker/server/list-container-assignees'
 import {
   Dialog,
   DialogContent,
@@ -102,7 +104,16 @@ function errorMessage(err: unknown): string {
   return userFriendlyDockerMessage(err) || message || 'Aksi gagal. Coba lagi.'
 }
 
-type ContainerTableRow = ContainerSummary & { environmentId?: string }
+type ContainerTableRow = ContainerSummary & {
+  environmentId?: string
+  registryId?: string
+  assignees?: Array<{
+    userId: string
+    name: string
+    role: string
+    assignedAt: string
+  }>
+}
 
 const columnHelper = createColumnHelper<ContainerTableRow>()
 
@@ -113,6 +124,13 @@ interface ContainerTableProps {
   onRefresh?: () => void
   isGlobal?: boolean
   environments?: Map<string, { name: string; projectName: string }>
+  onAssignClick?: (containerRegistryId: string, containerName: string) => void
+  showSummaryBar?: boolean
+  showSearchBar?: boolean
+  canAssign?: boolean
+  canManage?: boolean
+  canDelete?: boolean
+  currentUserId?: string
 }
 
 function SortHeader({
@@ -206,7 +224,7 @@ function ContainerNameCell({ name, image }: { name: string; image: string }) {
   )
 }
 
-export function ContainerTable({ containers, environmentId, onOpenDetail, onRefresh, isGlobal, environments }: ContainerTableProps) {
+export function ContainerTable({ containers, environmentId, onOpenDetail, onRefresh, isGlobal, environments, onAssignClick, showSummaryBar = true, showSearchBar = true, canAssign = true, canManage = true, canDelete = true, currentUserId }: ContainerTableProps) {
   const queryClient = useQueryClient()
   const [pendingId, setPendingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -367,6 +385,24 @@ export function ContainerTable({ containers, environmentId, onOpenDetail, onRefr
             ),
           ] as ColumnDef<ContainerTableRow, any>[])
         : []),
+      columnHelper.display({
+        id: 'assignees',
+        header: 'Assignees',
+        cell: (info) => {
+          const row = info.row.original
+          const assignees = (row.assignees ?? []) as ContainerAssignee[]
+          return (
+            <ContainerAssigneeBadges
+              assignees={assignees}
+              onClick={
+                canAssign && onAssignClick && row.registryId
+                  ? () => onAssignClick(row.registryId!, row.name)
+                  : undefined
+              }
+            />
+          )
+        },
+      }),
       columnHelper.accessor('state', {
         header: ({ column }) => <SortHeader label="State" column={column} />,
         filterFn: 'equalsString',
@@ -410,6 +446,15 @@ export function ContainerTable({ containers, environmentId, onOpenDetail, onRefr
           const container = info.row.original
           const isPending = pendingId === container.id
 
+          // Per-container assignment role check: if current user is
+          // assigned as "observer" to this container, hide manage actions.
+          const myAssignee = currentUserId
+            ? container.assignees?.find((a) => a.userId === currentUserId)
+            : undefined
+          const isObserver = myAssignee?.role === 'observer'
+          const showManage = canManage && !isObserver
+          const showDelete = canDelete && !isObserver
+
           // Context-aware availability per container state (task spec):
           // running    → Stop + Restart
           // exited     → Start
@@ -421,64 +466,78 @@ export function ContainerTable({ containers, environmentId, onOpenDetail, onRefr
           const canRestart = container.state === 'running'
           const locked = container.state === 'restarting' || container.state === 'dead'
 
+          // If user has no manage/delete permissions and is not pending,
+          // render a minimal placeholder to preserve row height.
+          if (!showManage && !showDelete && !isPending) {
+            return <span className="text-xs text-white/20">—</span>
+          }
+
           return (
             <div className="flex items-center gap-1">
               {isPending ? (
                 <Loader2 className="size-4 animate-spin text-white/50" />
               ) : (
                 <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={ACTION_BTN_CLASS}
-                    title="Start"
-                    disabled={!canStart || locked}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      startMutation.mutate(container.id)
-                    }}
-                  >
-                    <Play className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={ACTION_BTN_CLASS}
-                    title="Stop"
-                    disabled={!canStop || locked}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      stopMutation.mutate(container.id)
-                    }}
-                  >
-                    <Square className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={ACTION_BTN_CLASS}
-                    title="Restart"
-                    disabled={!canRestart || locked}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      restartMutation.mutate(container.id)
-                    }}
-                  >
-                    <RotateCw className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={`${ACTION_BTN_CLASS} hover:border-red-500/50 hover:text-red-300`}
-                    title="Remove"
-                    disabled={locked}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setRemoveTarget(container)
-                    }}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                  {showManage && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={ACTION_BTN_CLASS}
+                      title="Start"
+                      disabled={!canStart || locked}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        startMutation.mutate(container.id)
+                      }}
+                    >
+                      <Play className="size-4" />
+                    </Button>
+                  )}
+                  {showManage && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={ACTION_BTN_CLASS}
+                      title="Stop"
+                      disabled={!canStop || locked}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        stopMutation.mutate(container.id)
+                      }}
+                    >
+                      <Square className="size-4" />
+                    </Button>
+                  )}
+                  {showManage && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={ACTION_BTN_CLASS}
+                      title="Restart"
+                      disabled={!canRestart || locked}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        restartMutation.mutate(container.id)
+                      }}
+                    >
+                      <RotateCw className="size-4" />
+                    </Button>
+                  )}
+                  {showDelete && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={`${ACTION_BTN_CLASS} hover:border-red-500/50 hover:text-red-300`}
+                      title="Remove"
+                      disabled={locked}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setRemoveTarget(container)
+                      }}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  )}
                 </>
               )}
             </div>
@@ -486,7 +545,7 @@ export function ContainerTable({ containers, environmentId, onOpenDetail, onRefr
         },
       }),
     ],
-    [pendingId, startMutation, stopMutation, restartMutation, removeMutation, isGlobal, environments],
+    [pendingId, startMutation, stopMutation, restartMutation, removeMutation, isGlobal, environments, onAssignClick, canAssign, canManage, canDelete, currentUserId],
   )
 
   const table = useReactTable({
@@ -521,25 +580,31 @@ export function ContainerTable({ containers, environmentId, onOpenDetail, onRefr
         </div>
       )}
 
-      <ContainerSummaryBar containers={containers} active={activeFilter} onChange={setStatusFilter} />
+      {showSummaryBar && (
+        <ContainerSummaryBar containers={containers} active={activeFilter} onChange={setStatusFilter} />
+      )}
 
       {Object.keys(rowSelection).length >= 1 && (
         <ContainerBulkToolbar
           selectedIds={Object.keys(rowSelection).filter((id) => rowSelection[id])}
           environmentId={environmentId}
           onClear={() => setRowSelection({})}
+          canManage={canManage}
+          canDelete={canDelete}
         />
       )}
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <Input
-          ref={searchRef}
-          placeholder="Search name, image, state…  (f)"
-          value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          className="sm:max-w-xs"
-        />
-      </div>
+      {showSearchBar && (
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <Input
+            ref={searchRef}
+            placeholder="Search name, image, state…  (f)"
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            className="sm:max-w-xs"
+          />
+        </div>
+      )}
 
       <div className="rounded-[var(--glass-radius)] border border-[var(--glass-border)] bg-[var(--glass-surface)] backdrop-blur-[var(--glass-blur)]">
         <Table>

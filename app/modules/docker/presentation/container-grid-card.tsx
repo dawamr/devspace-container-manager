@@ -17,6 +17,9 @@ interface ContainerGridCardProps {
   projectName?: string
   onClick: () => void
   onRemove?: (container: ContainerSummary) => void
+  canManage?: boolean
+  canDelete?: boolean
+  currentUserId?: string
 }
 
 const ACTION_BTN_CLASS =
@@ -46,6 +49,9 @@ export function ContainerGridCard({
   projectName,
   onClick,
   onRemove,
+  canManage = true,
+  canDelete = true,
+  currentUserId,
 }: ContainerGridCardProps) {
   const queryClient = useQueryClient()
   const [pendingAction, setPendingAction] = useState<string | null>(null)
@@ -80,6 +86,14 @@ export function ContainerGridCard({
   const canRestart = container.state === 'running'
   const locked = container.state === 'restarting' || container.state === 'dead'
   const isBusy = pendingAction !== null
+
+  // Per-container assignment role check
+  const myAssignee = currentUserId
+    ? (container as any).assignees?.find((a: any) => a.userId === currentUserId)
+    : undefined
+  const isObserver = myAssignee?.role === 'observer'
+  const showManage = canManage && !isObserver
+  const showDelete = canDelete && !isObserver
 
   return (
     <div
@@ -116,26 +130,36 @@ export function ContainerGridCard({
 
       <div className="text-[11px] text-white/40">Created: {formatDate(container.createdAt)}</div>
 
-      <div className="flex items-center gap-1 border-t border-[var(--glass-border)] pt-2" onClick={(e) => e.stopPropagation()}>
-        {isBusy ? (
-          <Loader2 className="size-4 animate-spin text-white/50" />
-        ) : (
-          <>
-            <Button variant="ghost" size="icon" className={ACTION_BTN_CLASS} title="Start" disabled={!canStart || locked} onClick={() => startMutation.mutate(container.id)}>
-              <Play className="size-3.5" />
-            </Button>
-            <Button variant="ghost" size="icon" className={ACTION_BTN_CLASS} title="Stop" disabled={!canStop || locked} onClick={() => stopMutation.mutate(container.id)}>
-              <Square className="size-3.5" />
-            </Button>
-            <Button variant="ghost" size="icon" className={ACTION_BTN_CLASS} title="Restart" disabled={!canRestart || locked} onClick={() => restartMutation.mutate(container.id)}>
-              <RotateCw className="size-3.5" />
-            </Button>
-            <Button variant="ghost" size="icon" className={cn(ACTION_BTN_CLASS, 'hover:border-red-500/50 hover:text-red-300')} title="Remove" disabled={locked} onClick={() => onRemove?.(container)}>
-              <Trash2 className="size-3.5" />
-            </Button>
-          </>
-        )}
-      </div>
+      {showManage || showDelete ? (
+        <div className="flex items-center gap-1 border-t border-[var(--glass-border)] pt-2" onClick={(e) => e.stopPropagation()}>
+          {isBusy ? (
+            <Loader2 className="size-4 animate-spin text-white/50" />
+          ) : (
+            <>
+              {showManage && (
+                <Button variant="ghost" size="icon" className={ACTION_BTN_CLASS} title="Start" disabled={!canStart || locked} onClick={() => startMutation.mutate(container.id)}>
+                  <Play className="size-3.5" />
+                </Button>
+              )}
+              {showManage && (
+                <Button variant="ghost" size="icon" className={ACTION_BTN_CLASS} title="Stop" disabled={!canStop || locked} onClick={() => stopMutation.mutate(container.id)}>
+                  <Square className="size-3.5" />
+                </Button>
+              )}
+              {showManage && (
+                <Button variant="ghost" size="icon" className={ACTION_BTN_CLASS} title="Restart" disabled={!canRestart || locked} onClick={() => restartMutation.mutate(container.id)}>
+                  <RotateCw className="size-3.5" />
+                </Button>
+              )}
+              {showDelete && (
+                <Button variant="ghost" size="icon" className={cn(ACTION_BTN_CLASS, 'hover:border-red-500/50 hover:text-red-300')} title="Remove" disabled={locked} onClick={() => onRemove?.(container)}>
+                  <Trash2 className="size-3.5" />
+                </Button>
+              )}
+            </>
+          )}
+        </div>
+      ) : null}
     </div>
   )
 }
