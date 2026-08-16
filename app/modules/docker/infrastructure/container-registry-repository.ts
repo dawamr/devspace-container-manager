@@ -31,6 +31,16 @@ export async function findByProjectIds(projectIds: string[]): Promise<ContainerR
     .orderBy(containerRegistry.name)
 }
 
+/** Find containers by their registry PK IDs (used for assigned containers outside project access). */
+export async function findByIds(ids: string[]): Promise<ContainerRegistryRow[]> {
+  if (ids.length === 0) return []
+  return db
+    .select()
+    .from(containerRegistry)
+    .where(inArray(containerRegistry.id, ids))
+    .orderBy(containerRegistry.name)
+}
+
 export async function findByContainerId(
   containerId: string,
   projectIds: string[],

@@ -53,6 +53,90 @@ export interface ContainerDetail extends ContainerSummary {
 }
 
 /**
+ * Resource-usage snapshot from `GET /containers/{id}/stats?stream=false`.
+ * All byte values are raw numbers — the UI formats them (KB/MB/GB).
+ */
+export interface ContainerStats {
+  cpuPercent: number
+  memoryUsage: number // bytes
+  memoryLimit: number // bytes
+  memoryPercent: number
+  networkRx: number // bytes
+  networkTx: number // bytes
+  blockRead: number // bytes
+  blockWrite: number // bytes
+  pids: number
+  readTime: string // ISO timestamp from stats `read` field
+}
+
+/**
+ * Map a raw Docker stats snapshot into the `ContainerStats` domain type.
+ *
+ * The dockerode types are incomplete for stats, so the raw payload is typed
+ * as `any`. The fields used here follow the Docker Engine API v1.45 shape:
+ * `cpu_stats`/`precpu_stats` (CPU), `memory_stats` (memory),
+ * `networks` (network), `blkio_stats` (block I/O), `pids_stats` (PIDs).
+ *
+ * Edge cases:
+ * - First stats read: `precpu_stats` may be empty → cpuPercent = 0
+ * - Stopped container: fields may be absent → all zeros
+ * - `online_cpus` missing: default to 1
+ */
+export function mapContainerStats(raw: any): ContainerStats {
+  // CPU % — delta-based, requires precpu_stats
+  const cpuUsage = raw?.cpu_stats?.cpu_usage?.total_usage ?? 0
+  const preCpuUsage = raw?.precpu_stats?.cpu_usage?.total_usage ?? 0
+  const systemCpu = raw?.cpu_stats?.system_cpu_usage ?? 0
+  const preSystemCpu = raw?.precpu_stats?.system_cpu_usage ?? 0
+  const onlineCpus = raw?.cpu_stats?.online_cpus ?? 1
+
+  const cpuDelta = cpuUsage - preCpuUsage
+  const systemDelta = systemCpu - preSystemCpu
+  const cpuPercent =
+    systemDelta > 0 ? (cpuDelta / systemDelta) * onlineCpus * 100 : 0
+
+  // Memory
+  const memoryUsage = raw?.memory_stats?.usage ?? 0
+  const memoryLimit = raw?.memory_stats?.limit ?? 0
+  const memoryPercent =
+    memoryLimit > 0 ? (memoryUsage / memoryLimit) * 100 : 0
+
+  // Network — sum all interfaces
+  let networkRx = 0
+  let networkTx = 0
+  if (raw?.networks && typeof raw.networks === 'object') {
+    for (const iface of Object.values(raw.networks) as any[]) {
+      networkRx += iface?.rx_bytes ?? 0
+      networkTx += iface?.tx_bytes ?? 0
+    }
+  }
+
+  // Block I/O — sum io_service_bytes_recursive
+  let blockRead = 0
+  let blockWrite = 0
+  const blkioEntries = raw?.blkio_stats?.io_service_bytes_recursive
+  if (Array.isArray(blkioEntries)) {
+    for (const entry of blkioEntries) {
+      if (entry?.op === 'read') blockRead += entry.value ?? 0
+      if (entry?.op === 'write') blockWrite += entry.value ?? 0
+    }
+  }
+
+  return {
+    cpuPercent,
+    memoryUsage,
+    memoryLimit,
+    memoryPercent,
+    networkRx,
+    networkTx,
+    blockRead,
+    blockWrite,
+    pids: raw?.pids_stats?.current ?? 0,
+    readTime: raw?.read ?? '',
+  }
+}
+
+/**
  * Minimal subset of `GET /info` that DevSpace surfaces in the UI.
  * dockerode types `info()` as `any`, so we model the fields we consume.
  */
