@@ -3,7 +3,7 @@ import { db } from './client'
 import { roles, permissions, rolePermissions, users } from './schema'
 import { hashPassword } from '#/shared/lib/crypto'
 
-const RESOURCES = ['users', 'projects', 'environments', 'stacks', 'containers', 'logs'] as const
+const RESOURCES = ['users', 'projects', 'environments', 'stacks', 'containers', 'logs', 'workspaces'] as const
 const ACTIONS = ['create', 'read', 'update', 'delete', 'assign'] as const
 
 const PERMISSION_MATRIX: Record<string, Record<string, ('create' | 'read' | 'update' | 'delete' | 'assign')[]>> = {
@@ -14,6 +14,7 @@ const PERMISSION_MATRIX: Record<string, Record<string, ('create' | 'read' | 'upd
     stacks: ['create', 'read', 'update', 'delete'],
     containers: ['create', 'read', 'update', 'delete', 'assign'],
     logs: ['read'],
+    workspaces: ['create', 'read', 'update', 'delete'],
   },
   developer: {
     users: [],
@@ -22,6 +23,7 @@ const PERMISSION_MATRIX: Record<string, Record<string, ('create' | 'read' | 'upd
     stacks: ['create', 'read', 'update', 'delete'],
     containers: ['create', 'read', 'update', 'delete', 'assign'],
     logs: ['read'],
+    workspaces: ['read'],
   },
   viewer: {
     users: [],
@@ -30,6 +32,7 @@ const PERMISSION_MATRIX: Record<string, Record<string, ('create' | 'read' | 'upd
     stacks: ['read'],
     containers: ['read'],
     logs: ['read'],
+    workspaces: ['read'],
   },
 }
 

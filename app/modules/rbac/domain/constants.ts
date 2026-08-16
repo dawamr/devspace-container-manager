@@ -11,6 +11,7 @@ export const RESOURCES = {
   STACKS: 'stacks',
   CONTAINERS: 'containers',
   LOGS: 'logs',
+  WORKSPACES: 'workspaces',
 } as const
 
 export const ACTIONS = {
