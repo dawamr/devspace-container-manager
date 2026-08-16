@@ -6,6 +6,8 @@ import { captureEvent } from '#/shared/lib/posthog'
 import { listContainersFn } from '#/modules/docker/server/list-containers'
 import { ContainerTable } from '#/modules/docker/presentation/container-table'
 import { ContainerDetailDrawer } from '#/modules/docker/presentation/container-detail-drawer'
+import { checkPermissionFn } from '#/modules/rbac/server/check-permission'
+import { RESOURCES, ACTIONS } from '#/modules/rbac/domain/constants'
 import type { ContainerSummary } from '#/modules/docker/domain/docker-types'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '#/shared/ui/button'
@@ -20,6 +22,21 @@ export const Route = createFileRoute(
 function ContainersPage() {
   const { projectId, environmentId } = useParams({
     from: '/_dashboard/configuration/projects/$projectId/environments/$environmentId/containers',
+  })
+  const { user } = Route.useRouteContext()
+
+  // Permission checks
+  const { data: canManage = false } = useQuery({
+    queryKey: ['permission', user.roleName, 'containers', 'update'],
+    queryFn: () => checkPermissionFn({ data: { roleName: user.roleName, resource: RESOURCES.CONTAINERS, action: ACTIONS.UPDATE } }),
+  })
+  const { data: canDelete = false } = useQuery({
+    queryKey: ['permission', user.roleName, 'containers', 'delete'],
+    queryFn: () => checkPermissionFn({ data: { roleName: user.roleName, resource: RESOURCES.CONTAINERS, action: ACTIONS.DELETE } }),
+  })
+  const { data: canAssign = false } = useQuery({
+    queryKey: ['permission', user.roleName, 'containers', 'assign'],
+    queryFn: () => checkPermissionFn({ data: { roleName: user.roleName, resource: RESOURCES.CONTAINERS, action: ACTIONS.ASSIGN } }),
   })
 
   // Sprint 2 / H1: time from route entry to environment selection.
@@ -110,6 +127,10 @@ function ContainersPage() {
           environmentId={environmentId}
           onOpenDetail={setDetailTarget}
           onRefresh={() => void refetch()}
+          canManage={canManage}
+          canDelete={canDelete}
+          canAssign={canAssign}
+          currentUserId={user.id}
         />
       )}
 
@@ -120,6 +141,7 @@ function ContainersPage() {
         onOpenChange={(open) => {
           if (!open) setDetailTarget(null)
         }}
+        canAssign={canAssign}
       />
     </div>
   )

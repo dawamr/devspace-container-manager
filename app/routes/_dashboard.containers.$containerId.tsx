@@ -6,6 +6,7 @@ import { inspectContainerByIdFn } from '#/modules/docker/server/inspect-containe
 import { GlassPanel } from '#/shared/ui/glass-card'
 import { Badge } from '#/shared/ui/badge'
 import { Link } from '@tanstack/react-router'
+import { ContainerStatsViewer } from '#/modules/docker/presentation/container-stats-viewer'
 
 export const Route = createFileRoute('/_dashboard/containers/$containerId')({
   component: ContainerDetailPage,
@@ -114,6 +115,13 @@ function ContainerDetailPage() {
             ) : (
               <p className="text-sm text-muted-foreground">No mounts</p>
             )}
+          </GlassPanel>
+
+          <GlassPanel className="p-5 lg:col-span-2">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Statistics
+            </h2>
+            <ContainerStatsViewer containerId={containerId} byId />
           </GlassPanel>
         </div>
       ) : null}

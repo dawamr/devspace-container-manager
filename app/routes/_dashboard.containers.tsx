@@ -4,8 +4,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { RefreshCw, Box, Search, Loader2, AlertTriangle, Trash2 } from 'lucide-react'
 
 import { listAllContainersFn, type GlobalContainerSummary } from '#/modules/docker/server/list-all-containers'
+import { listUserContainersFn } from '#/modules/docker/server/list-user-containers'
 import { listEnvironmentsMapFn } from '#/modules/docker/server/list-environments-map'
 import { removeContainerFn } from '#/modules/docker/server/remove-container'
+import { checkPermissionFn } from '#/modules/rbac/server/check-permission'
+import { RESOURCES, ACTIONS } from '#/modules/rbac/domain/constants'
 import { ContainerTable } from '#/modules/docker/presentation/container-table'
 import { ContainerSummaryBar } from '#/modules/docker/presentation/container-summary-bar'
 import { ContainerDetailDrawer } from '#/modules/docker/presentation/container-detail-drawer'
@@ -14,6 +17,8 @@ import { ContainerListRow } from '#/modules/docker/presentation/container-list-r
 import { ContainerViewToggle, type ViewMode } from '#/modules/docker/presentation/container-view-toggle'
 import { ContainerGroupControl, type GroupBy } from '#/modules/docker/presentation/container-group-control'
 import { ContainerColumnToggle, type ColumnDef } from '#/modules/docker/presentation/container-column-toggle'
+import { MyContainersToggle } from '#/modules/docker/presentation/my-containers-toggle'
+import { ContainerAssignDialog } from '#/modules/docker/presentation/container-assign-dialog'
 import { GlassPanel } from '#/shared/ui/glass-card'
 import { Button } from '#/shared/ui/button'
 import { Input } from '#/shared/ui/input'
@@ -63,6 +68,34 @@ interface ContainerGroup {
 
 function ContainersPage() {
   const queryClient = useQueryClient()
+  const { user } = Route.useRouteContext()
+
+  // ── Check if current user can assign containers ──
+  const { data: canAssign = false } = useQuery({
+    queryKey: ['permission', user.roleName, 'containers', 'assign'],
+    queryFn: () =>
+      checkPermissionFn({
+        data: { roleName: user.roleName, resource: RESOURCES.CONTAINERS, action: ACTIONS.ASSIGN },
+      }),
+  })
+
+  // ── Check if current user can manage (start/stop/restart) containers ──
+  const { data: canManage = false } = useQuery({
+    queryKey: ['permission', user.roleName, 'containers', 'update'],
+    queryFn: () =>
+      checkPermissionFn({
+        data: { roleName: user.roleName, resource: RESOURCES.CONTAINERS, action: ACTIONS.UPDATE },
+      }),
+  })
+
+  // ── Check if current user can delete containers ──
+  const { data: canDelete = false } = useQuery({
+    queryKey: ['permission', user.roleName, 'containers', 'delete'],
+    queryFn: () =>
+      checkPermissionFn({
+        data: { roleName: user.roleName, resource: RESOURCES.CONTAINERS, action: ACTIONS.DELETE },
+      }),
+  })
 
   // ── State ──────────────────────────────────────────────
   const [viewMode, setViewMode] = useState<ViewMode>('table')
@@ -73,6 +106,8 @@ function ContainersPage() {
   const [detailTarget, setDetailTarget] = useState<GlobalContainerSummary | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [removeTarget, setRemoveTarget] = useState<GlobalContainerSummary | null>(null)
+  const [showAssignedToMe, setShowAssignedToMe] = useState(false)
+  const [assignDialog, setAssignDialog] = useState<{ containerRegistryId: string; containerName: string } | null>(null)
 
   const searchRef = useRef<HTMLInputElement>(null)
 
@@ -151,6 +186,13 @@ function ContainersPage() {
     queryFn: () => listEnvironmentsMapFn(),
   })
 
+  // ── User's assigned container IDs (for "Assigned to me" filter) ──
+  const { data: userContainerIds } = useQuery({
+    queryKey: ['user-containers'],
+    queryFn: () => listUserContainersFn(),
+    enabled: showAssignedToMe,
+  })
+
   // ── Environments map for lookups ───────────────────────
   const envMap = useMemo(() => {
     const m = new Map<string, { name: string; projectName: string }>()
@@ -163,6 +205,12 @@ function ContainersPage() {
   // ── Filtering (applied before grouping) ───────────────
   const filteredContainers = useMemo(() => {
     let result = containers ?? []
+
+    // "Assigned to me" filter
+    if (showAssignedToMe && userContainerIds?.containerRegistryIds) {
+      const assignedIds = new Set(userContainerIds.containerRegistryIds)
+      result = result.filter((c) => assignedIds.has(c.registryId))
+    }
 
     // Status filter
     if (statusFilter === 'running') {
@@ -186,7 +234,7 @@ function ContainersPage() {
     }
 
     return result
-  }, [containers, statusFilter, search])
+  }, [containers, statusFilter, search, showAssignedToMe, userContainerIds])
 
   // ── Grouping ───────────────────────────────────────────
   const groups = useMemo<ContainerGroup[]>(() => {
@@ -272,6 +320,7 @@ function ContainersPage() {
           />
         </div>
         <ContainerGroupControl value={groupBy} onChange={setGroupBy} />
+        <MyContainersToggle active={showAssignedToMe} onToggle={setShowAssignedToMe} />
         <ContainerColumnToggle
           columns={COLUMNS}
           visibility={columnVisibility}
@@ -332,6 +381,15 @@ function ContainersPage() {
                   onRefresh={() => refetch()}
                   isGlobal
                   environments={envMap}
+                  onAssignClick={(containerRegistryId, containerName) =>
+                    setAssignDialog({ containerRegistryId, containerName })
+                  }
+                  showSummaryBar={false}
+                  showSearchBar={false}
+                  canAssign={canAssign}
+                  canManage={canManage}
+                  canDelete={canDelete}
+                  currentUserId={user.id}
                 />
               )}
 
@@ -347,6 +405,9 @@ function ContainersPage() {
                       projectName={envMap.get(c.environmentId)?.projectName}
                       onClick={() => openDetail(c as unknown as ContainerSummary)}
                       onRemove={(c) => setRemoveTarget(c as unknown as GlobalContainerSummary)}
+                      canManage={canManage}
+                      canDelete={canDelete}
+                      currentUserId={user.id}
                     />
                   ))}
                 </div>
@@ -364,6 +425,9 @@ function ContainersPage() {
                       projectName={envMap.get(c.environmentId)?.projectName}
                       onClick={() => openDetail(c as unknown as ContainerSummary)}
                       onRemove={(c) => setRemoveTarget(c as unknown as GlobalContainerSummary)}
+                      canManage={canManage}
+                      canDelete={canDelete}
+                      currentUserId={user.id}
                     />
                   ))}
                 </GlassPanel>
@@ -379,6 +443,8 @@ function ContainersPage() {
         container={detailTarget as unknown as ContainerSummary | null}
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
+        registryId={detailTarget?.registryId}
+        canAssign={canAssign}
       />
 
       {/* Remove confirmation dialog */}
@@ -414,6 +480,16 @@ function ContainersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Container assignment dialog */}
+      {assignDialog && canAssign && (
+        <ContainerAssignDialog
+          containerRegistryId={assignDialog.containerRegistryId}
+          containerName={assignDialog.containerName}
+          open={!!assignDialog}
+          onOpenChange={(open) => !open && setAssignDialog(null)}
+        />
+      )}
     </div>
   )
 }
