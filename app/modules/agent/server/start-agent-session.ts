@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { requirePermission } from '#/modules/rbac/server/require-permission'
 import { RESOURCES, ACTIONS } from '#/modules/rbac/domain/constants'
 import { createSession } from '#/modules/agent/infrastructure/agent-session-repository'
-import { env } from '#/shared/config/env'
+import { getAgentSettings } from '#/modules/agent/infrastructure/settings-repository'
 
 const StartSessionInput = z.object({
   workspaceId: z.string().uuid(),
@@ -16,6 +16,8 @@ export const startAgentSessionFn = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const user = await requirePermission(RESOURCES.WORKSPACES, ACTIONS.READ)
 
+    const config = await getAgentSettings()
+
     const session = await createSession({
       workspaceId: data.workspaceId,
       userId: user.id,
@@ -23,7 +25,7 @@ export const startAgentSessionFn = createServerFn({ method: 'POST' })
       status: 'active',
       toolCallCount: 0,
       tokenUsage: 0,
-      tokenBudget: env.AGENT_TOKEN_BUDGET,
+      tokenBudget: config.agentTokenBudget,
     })
 
     return { sessionId: session.id }

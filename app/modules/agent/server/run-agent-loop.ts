@@ -1,10 +1,10 @@
-import { env } from '#/shared/config/env'
 import { buildSystemPrompt } from '#/modules/agent/domain/system-prompt'
 import { getToolSchemas, getToolByName } from '#/modules/agent/tools/factory'
 import type { AgentRunConfig, ToolCallResult, ToolParams } from '#/modules/agent/domain/agent-types'
 import { findWorkspaceById } from '#/modules/agent/infrastructure/workspace-repository'
 import { resolveContainerPath } from '#/modules/agent/infrastructure/path-guard'
 import { incrementToolCallCount, addTokenUsage, updateSession } from '#/modules/agent/infrastructure/agent-session-repository'
+import { getAgentSettings } from '#/modules/agent/infrastructure/settings-repository'
 import { db } from '#/shared/db/client'
 import { containerRegistry } from '#/shared/db/schema'
 import { eq } from 'drizzle-orm'
@@ -142,15 +142,16 @@ async function callLLM(
   tools: Record<string, { description: string; parameters: unknown }>,
   signal?: AbortSignal,
 ): Promise<LLMResponse> {
-  const baseUrl = env.LLM_BASE_URL || 'https://api.openai.com/v1'
+  const config = await getAgentSettings()
+  const baseUrl = config.llmBaseUrl || 'https://api.openai.com/v1'
   const response = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${env.LLM_API_KEY}`,
+      'Authorization': `Bearer ${config.llmApiKey}`,
     },
     body: JSON.stringify({
-      model: env.LLM_MODEL,
+      model: config.llmModel,
       messages,
       tools: Object.entries(tools).map(([name, def]) => ({
         type: 'function',

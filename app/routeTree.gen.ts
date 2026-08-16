@@ -22,6 +22,7 @@ import { Route as DashboardInfrastructureRouteImport } from './routes/_dashboard
 import { Route as DashboardProjectsRouteImport } from './routes/_dashboard.projects'
 import { Route as DashboardStacksRouteImport } from './routes/_dashboard.stacks'
 import { Route as DashboardAdministrationIndexRouteImport } from './routes/_dashboard.administration.index'
+import { Route as DashboardAdministrationAgentSettingsRouteImport } from './routes/_dashboard.administration.agent-settings'
 import { Route as DashboardAdministrationAuditLogsRouteImport } from './routes/_dashboard.administration.audit-logs'
 import { Route as DashboardAdministrationRolesRouteImport } from './routes/_dashboard.administration.roles'
 import { Route as DashboardAdministrationUsersRouteImport } from './routes/_dashboard.administration.users'
@@ -98,6 +99,12 @@ const DashboardAdministrationIndexRoute =
   DashboardAdministrationIndexRouteImport.update({
     id: '/',
     path: '/',
+    getParentRoute: () => DashboardAdministrationRoute,
+  } as any)
+const DashboardAdministrationAgentSettingsRoute =
+  DashboardAdministrationAgentSettingsRouteImport.update({
+    id: '/agent-settings',
+    path: '/agent-settings',
     getParentRoute: () => DashboardAdministrationRoute,
   } as any)
 const DashboardAdministrationAuditLogsRoute =
@@ -204,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/infrastructure': typeof DashboardInfrastructureRoute
   '/projects': typeof DashboardProjectsRoute
   '/stacks': typeof DashboardStacksRoute
+  '/administration/agent-settings': typeof DashboardAdministrationAgentSettingsRoute
   '/administration/audit-logs': typeof DashboardAdministrationAuditLogsRoute
   '/administration/roles': typeof DashboardAdministrationRolesRoute
   '/administration/users': typeof DashboardAdministrationUsersRoute
@@ -228,6 +236,7 @@ export interface FileRoutesByTo {
   '/infrastructure': typeof DashboardInfrastructureRoute
   '/projects': typeof DashboardProjectsRoute
   '/stacks': typeof DashboardStacksRoute
+  '/administration/agent-settings': typeof DashboardAdministrationAgentSettingsRoute
   '/administration/audit-logs': typeof DashboardAdministrationAuditLogsRoute
   '/administration/roles': typeof DashboardAdministrationRolesRoute
   '/administration/users': typeof DashboardAdministrationUsersRoute
@@ -256,6 +265,7 @@ export interface FileRoutesById {
   '/_dashboard/projects': typeof DashboardProjectsRoute
   '/_dashboard/stacks': typeof DashboardStacksRoute
   '/_dashboard/': typeof DashboardIndexRoute
+  '/_dashboard/administration/agent-settings': typeof DashboardAdministrationAgentSettingsRoute
   '/_dashboard/administration/audit-logs': typeof DashboardAdministrationAuditLogsRoute
   '/_dashboard/administration/roles': typeof DashboardAdministrationRolesRoute
   '/_dashboard/administration/users': typeof DashboardAdministrationUsersRoute
@@ -284,6 +294,7 @@ export interface FileRouteTypes {
     | '/infrastructure'
     | '/projects'
     | '/stacks'
+    | '/administration/agent-settings'
     | '/administration/audit-logs'
     | '/administration/roles'
     | '/administration/users'
@@ -308,6 +319,7 @@ export interface FileRouteTypes {
     | '/infrastructure'
     | '/projects'
     | '/stacks'
+    | '/administration/agent-settings'
     | '/administration/audit-logs'
     | '/administration/roles'
     | '/administration/users'
@@ -335,6 +347,7 @@ export interface FileRouteTypes {
     | '/_dashboard/projects'
     | '/_dashboard/stacks'
     | '/_dashboard/'
+    | '/_dashboard/administration/agent-settings'
     | '/_dashboard/administration/audit-logs'
     | '/_dashboard/administration/roles'
     | '/_dashboard/administration/users'
@@ -449,6 +462,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAdministrationIndexRouteImport
       parentRoute: typeof DashboardAdministrationRoute
     }
+    '/_dashboard/administration/agent-settings': {
+      id: '/_dashboard/administration/agent-settings'
+      path: '/agent-settings'
+      fullPath: '/administration/agent-settings'
+      preLoaderRoute: typeof DashboardAdministrationAgentSettingsRouteImport
+      parentRoute: typeof DashboardAdministrationRoute
+    }
     '/_dashboard/administration/audit-logs': {
       id: '/_dashboard/administration/audit-logs'
       path: '/audit-logs'
@@ -554,6 +574,7 @@ const AuthRouteChildren: AuthRouteChildren = {
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface DashboardAdministrationRouteChildren {
+  DashboardAdministrationAgentSettingsRoute: typeof DashboardAdministrationAgentSettingsRoute
   DashboardAdministrationAuditLogsRoute: typeof DashboardAdministrationAuditLogsRoute
   DashboardAdministrationRolesRoute: typeof DashboardAdministrationRolesRoute
   DashboardAdministrationUsersRoute: typeof DashboardAdministrationUsersRoute
@@ -562,6 +583,8 @@ interface DashboardAdministrationRouteChildren {
 
 const DashboardAdministrationRouteChildren: DashboardAdministrationRouteChildren =
   {
+    DashboardAdministrationAgentSettingsRoute:
+      DashboardAdministrationAgentSettingsRoute,
     DashboardAdministrationAuditLogsRoute:
       DashboardAdministrationAuditLogsRoute,
     DashboardAdministrationRolesRoute: DashboardAdministrationRolesRoute,

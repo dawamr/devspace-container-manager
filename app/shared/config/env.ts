@@ -6,6 +6,7 @@ const envSchema = z.object({
   DOCKER_CERT_PATH: z.string().optional(),
   DATABASE_URL: z.string().min(1),
   SESSION_SECRET: z.string().min(1),
+  // LLM config now read from DB settings table; env vars kept as fallback only
   LLM_API_KEY: z.string().default(''),
   LLM_MODEL: z.string().default('gpt-4o'),
   LLM_BASE_URL: z.string().default(''),
