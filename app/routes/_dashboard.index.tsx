@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Box, Layers, Settings, ShieldCheck } from 'lucide-react'
+import { Bot, Box, Layers, Settings, ShieldCheck } from 'lucide-react'
 
 import { AppGrid, type AppGridTileBase } from '#/shared/components/layout/app-grid'
 import {
@@ -39,6 +39,12 @@ const APP_TILES: AppGridTileBase[] = [
     description: 'Semua container lintas project',
     href: '/containers',
     icon: Box,
+  },
+  {
+    title: 'Agent',
+    description: 'AI agentic workspace',
+    href: '/agent',
+    icon: Bot,
   },
 ]
 
