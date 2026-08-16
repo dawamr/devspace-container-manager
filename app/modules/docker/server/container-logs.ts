@@ -81,19 +81,45 @@ export const containerLogsFn = createServerFn({ method: 'GET' })
 /**
  * Parse the raw Docker log buffer into structured log lines.
  *
- * Docker's non-following log output concatenates stdout + stderr into a
- * single buffer. When `timestamps: true` is set, each line is prefixed
- * with an RFC3339 timestamp followed by a space.
+ * Docker's non-following log output uses a multiplexed stream format:
+ * each chunk is preceded by an 8-byte header —
+ *   byte 0:      stream type (1 = stdout, 2 = stderr)
+ *   bytes 1-3:   reserved (zeros)
+ *   bytes 4-7:   payload length (big-endian uint32)
+ * followed by `payloadLength` bytes of actual log content.
+ *
+ * When `timestamps: true` is set, each payload line is prefixed with an
+ * RFC3339 timestamp followed by a space.
+ *
+ * Exported so other server functions can reuse the same demuxing logic.
  */
-function parseDockerLogs(
+export function parseDockerLogs(
   raw: Buffer,
   withTimestamps: boolean,
 ): ContainerLogLine[] {
-  const text = raw.toString('utf-8')
-  return text
-    .split('\n')
-    .filter((l) => l.length > 0)
-    .map((line) => {
+  if (!raw || raw.length === 0) return []
+
+  const lines: ContainerLogLine[] = []
+  let offset = 0
+
+  while (offset + 8 <= raw.length) {
+    const streamType = raw[offset]
+    const payloadLength = raw.readUInt32BE(offset + 4)
+    offset += 8
+
+    // Incomplete payload — not enough bytes remaining for this chunk.
+    if (offset + payloadLength > raw.length) break
+
+    const stream: 'stdout' | 'stderr' =
+      streamType === 2 ? 'stderr' : 'stdout'
+
+    const payload = raw.subarray(offset, offset + payloadLength)
+    offset += payloadLength
+
+    const text = payload.toString('utf-8')
+    for (const line of text.split('\n')) {
+      if (line.length === 0) continue
+
       let timestamp = ''
       let message = line
 
@@ -107,6 +133,9 @@ function parseDockerLogs(
         }
       }
 
-      return { timestamp, stream: 'stdout' as const, message }
-    })
+      lines.push({ timestamp, stream, message })
+    }
+  }
+
+  return lines
 }

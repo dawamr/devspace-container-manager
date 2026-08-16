@@ -4,13 +4,22 @@ import { z } from 'zod'
 import { requirePermission } from '#/modules/rbac/server/require-permission'
 import { RESOURCES, ACTIONS } from '#/modules/rbac/domain/constants'
 import { findAccessibleProjectIds } from '#/modules/projects/server/accessible-projects'
-import { findByProjectIds } from '../infrastructure/container-registry-repository'
+import { findByProjectIds, findByIds } from '../infrastructure/container-registry-repository'
+import { findAssigneesByContainerIds, findContainerIdsByUserId } from '../infrastructure/container-assignment-repository'
 import { syncContainerRegistry } from './sync-container-registry'
 import { captureServerEvent } from '#/shared/lib/posthog-server'
 import type { ContainerHealth } from '#/modules/docker/domain/docker-types'
 
+export interface ContainerAssigneeSummary {
+  userId: string
+  name: string
+  role: string
+  assignedAt: string
+}
+
 export interface GlobalContainerSummary {
   id: string
+  registryId: string
   containerId: string
   name: string
   image: string
@@ -24,6 +33,7 @@ export interface GlobalContainerSummary {
   projectId: string
   isActive: boolean
   lastSeenAt: string
+  assignees: ContainerAssigneeSummary[]
 }
 
 /**
@@ -35,10 +45,31 @@ export interface GlobalContainerSummary {
 export const listAllContainersFn = createServerFn({ method: 'GET' })
   .validator(z.object({}).optional())
   .handler(async (): Promise<GlobalContainerSummary[]> => {
-    await requirePermission(RESOURCES.CONTAINERS, ACTIONS.READ)
+    const user = await requirePermission(RESOURCES.CONTAINERS, ACTIONS.READ)
 
     const projectIds = await findAccessibleProjectIds()
-    const rows = await findByProjectIds(projectIds)
+    const projectRows = await findByProjectIds(projectIds)
+
+    // Also fetch containers assigned to the current user, even if they
+    // don't have project membership for that container's project.
+    // Assignment is metadata — it should surface the container regardless
+    // of project-level access.
+    const assignedIds = await findContainerIdsByUserId(user.id)
+    const assignedRows = await findByIds(assignedIds)
+
+    // Merge: deduplicate by registry PK (id), prioritising project-accessed rows
+    const seen = new Set(projectRows.map((r) => r.id))
+    const rows = [...projectRows]
+    for (const r of assignedRows) {
+      if (!seen.has(r.id)) {
+        rows.push(r)
+        seen.add(r.id)
+      }
+    }
+
+    // Batch-load assignees for all containers (single query, no N+1)
+    const registryIds = rows.map((r) => r.id)
+    const assigneeMap = await findAssigneesByContainerIds(registryIds)
 
     // Fire-and-forget sync — does NOT block response
     syncContainerRegistry(projectIds).catch((err) =>
@@ -52,6 +83,7 @@ export const listAllContainersFn = createServerFn({ method: 'GET' })
 
     return rows.map((r) => ({
       id: r.containerId,
+      registryId: r.id,
       containerId: r.containerId,
       name: r.name,
       image: r.image,
@@ -65,5 +97,11 @@ export const listAllContainersFn = createServerFn({ method: 'GET' })
       projectId: r.projectId,
       isActive: r.isActive,
       lastSeenAt: r.lastSeenAt.toISOString(),
+      assignees: (assigneeMap.get(r.id) ?? []).map((a) => ({
+        userId: a.userId,
+        name: a.name,
+        role: a.role,
+        assignedAt: a.assignedAt.toISOString(),
+      })),
     }))
   })
