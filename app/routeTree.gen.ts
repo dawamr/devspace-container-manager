@@ -14,6 +14,7 @@ import { Route as DashboardRouteImport } from './routes/_dashboard'
 import { Route as AuthLoginRouteImport } from './routes/_auth.login'
 import { Route as DashboardIndexRouteImport } from './routes/_dashboard.index'
 import { Route as DashboardAdministrationRouteImport } from './routes/_dashboard.administration'
+import { Route as DashboardAgentRouteImport } from './routes/_dashboard.agent'
 import { Route as DashboardConfigurationRouteImport } from './routes/_dashboard.configuration'
 import { Route as DashboardContainersRouteImport } from './routes/_dashboard.containers'
 import { Route as DashboardForbiddenRouteImport } from './routes/_dashboard.forbidden'
@@ -56,6 +57,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
 const DashboardAdministrationRoute = DashboardAdministrationRouteImport.update({
   id: '/administration',
   path: '/administration',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAgentRoute = DashboardAgentRouteImport.update({
+  id: '/agent',
+  path: '/agent',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardConfigurationRoute = DashboardConfigurationRouteImport.update({
@@ -191,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/': typeof DashboardIndexRoute
   '/login': typeof AuthLoginRoute
   '/administration': typeof DashboardAdministrationRouteWithChildren
+  '/agent': typeof DashboardAgentRoute
   '/configuration': typeof DashboardConfigurationRouteWithChildren
   '/containers': typeof DashboardContainersRouteWithChildren
   '/forbidden': typeof DashboardForbiddenRoute
@@ -215,6 +222,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof DashboardIndexRoute
   '/login': typeof AuthLoginRoute
+  '/agent': typeof DashboardAgentRoute
   '/containers': typeof DashboardContainersRouteWithChildren
   '/forbidden': typeof DashboardForbiddenRoute
   '/infrastructure': typeof DashboardInfrastructureRoute
@@ -240,6 +248,7 @@ export interface FileRoutesById {
   '/_dashboard': typeof DashboardRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_dashboard/administration': typeof DashboardAdministrationRouteWithChildren
+  '/_dashboard/agent': typeof DashboardAgentRoute
   '/_dashboard/configuration': typeof DashboardConfigurationRouteWithChildren
   '/_dashboard/containers': typeof DashboardContainersRouteWithChildren
   '/_dashboard/forbidden': typeof DashboardForbiddenRoute
@@ -268,6 +277,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/administration'
+    | '/agent'
     | '/configuration'
     | '/containers'
     | '/forbidden'
@@ -292,6 +302,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/agent'
     | '/containers'
     | '/forbidden'
     | '/infrastructure'
@@ -316,6 +327,7 @@ export interface FileRouteTypes {
     | '/_dashboard'
     | '/_auth/login'
     | '/_dashboard/administration'
+    | '/_dashboard/agent'
     | '/_dashboard/configuration'
     | '/_dashboard/containers'
     | '/_dashboard/forbidden'
@@ -379,6 +391,13 @@ declare module '@tanstack/react-router' {
       path: '/administration'
       fullPath: '/administration'
       preLoaderRoute: typeof DashboardAdministrationRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/agent': {
+      id: '/_dashboard/agent'
+      path: '/agent'
+      fullPath: '/agent'
+      preLoaderRoute: typeof DashboardAgentRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/_dashboard/configuration': {
@@ -655,6 +674,7 @@ const DashboardContainersRouteWithChildren =
 
 interface DashboardRouteChildren {
   DashboardAdministrationRoute: typeof DashboardAdministrationRouteWithChildren
+  DashboardAgentRoute: typeof DashboardAgentRoute
   DashboardConfigurationRoute: typeof DashboardConfigurationRouteWithChildren
   DashboardContainersRoute: typeof DashboardContainersRouteWithChildren
   DashboardForbiddenRoute: typeof DashboardForbiddenRoute
@@ -666,6 +686,7 @@ interface DashboardRouteChildren {
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAdministrationRoute: DashboardAdministrationRouteWithChildren,
+  DashboardAgentRoute: DashboardAgentRoute,
   DashboardConfigurationRoute: DashboardConfigurationRouteWithChildren,
   DashboardContainersRoute: DashboardContainersRouteWithChildren,
   DashboardForbiddenRoute: DashboardForbiddenRoute,
