@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { requirePermission } from '#/modules/rbac/server/require-permission'
 import { RESOURCES, ACTIONS } from '#/modules/rbac/domain/constants'
 import { findSessionById, updateSession } from '#/modules/agent/infrastructure/agent-session-repository'
+import { captureServerEvent } from '#/shared/lib/posthog-server'
 import { runAgentLoop } from './run-agent-loop'
 import { registerController, unregisterController } from './abort-registry'
 
@@ -25,6 +26,7 @@ export const sendAgentMessageFn = createServerFn({ method: 'POST' })
     const events: string[] = []
     const controller = new AbortController()
     registerController(session.id, controller)
+    const startedAt = performance.now()
 
     try {
       await runAgentLoop(
@@ -39,9 +41,24 @@ export const sendAgentMessageFn = createServerFn({ method: 'POST' })
         },
         data.message,
       )
+
+      await captureServerEvent('agent_session_completed', {
+        sessionId: session.id,
+        workspaceId: session.workspaceId,
+        userId: user.id,
+        duration_ms: Math.round(performance.now() - startedAt),
+      })
     } catch (err) {
       events.push(`data: ${JSON.stringify({ type: 'error', message: err instanceof Error ? err.message : String(err) })}\n\n`)
       await updateSession(session.id, { status: 'error', endedAt: new Date() })
+
+      await captureServerEvent('agent_session_error', {
+        sessionId: session.id,
+        workspaceId: session.workspaceId,
+        userId: user.id,
+        errorMessage: err instanceof Error ? err.message : String(err),
+        duration_ms: Math.round(performance.now() - startedAt),
+      })
     } finally {
       unregisterController(session.id)
     }

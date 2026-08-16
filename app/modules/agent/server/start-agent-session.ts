@@ -5,6 +5,7 @@ import { requirePermission } from '#/modules/rbac/server/require-permission'
 import { RESOURCES, ACTIONS } from '#/modules/rbac/domain/constants'
 import { createSession } from '#/modules/agent/infrastructure/agent-session-repository'
 import { getAgentSettings } from '#/modules/agent/infrastructure/settings-repository'
+import { captureServerEvent } from '#/shared/lib/posthog-server'
 
 const StartSessionInput = z.object({
   workspaceId: z.string().uuid(),
@@ -26,6 +27,13 @@ export const startAgentSessionFn = createServerFn({ method: 'POST' })
       toolCallCount: 0,
       tokenUsage: 0,
       tokenBudget: config.agentTokenBudget,
+    })
+
+    await captureServerEvent('agent_session_started', {
+      sessionId: session.id,
+      workspaceId: data.workspaceId,
+      userId: user.id,
+      hasContainer: !!data.containerRegistryId,
     })
 
     return { sessionId: session.id }

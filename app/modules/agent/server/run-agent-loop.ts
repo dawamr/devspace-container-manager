@@ -3,13 +3,15 @@ import { getToolSchemas, getToolByName } from '#/modules/agent/tools/factory'
 import type { AgentRunConfig, ToolCallResult, ToolParams } from '#/modules/agent/domain/agent-types'
 import { findWorkspaceById } from '#/modules/agent/infrastructure/workspace-repository'
 import { resolveContainerPath } from '#/modules/agent/infrastructure/path-guard'
-import { incrementToolCallCount, addTokenUsage, updateSession } from '#/modules/agent/infrastructure/agent-session-repository'
+import { incrementToolCallCount, addTokensAndReturn, updateSession, findSessionById } from '#/modules/agent/infrastructure/agent-session-repository'
 import { getAgentSettings } from '#/modules/agent/infrastructure/settings-repository'
+import { captureServerEvent } from '#/shared/lib/posthog-server'
+import { env } from '#/shared/config/env'
 import { db } from '#/shared/db/client'
 import { containerRegistry } from '#/shared/db/schema'
 import { eq } from 'drizzle-orm'
 
-const MAX_ITERATIONS = 20
+const MAX_ITERATIONS = env.AGENT_TOOL_LIMIT
 
 interface ChatMessage {
   role: 'system' | 'user' | 'assistant' | 'tool'
@@ -70,9 +72,22 @@ export async function runAgentLoop(
   for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
     if (signal?.aborted) break
 
+    // Check token budget before calling LLM
+    const session = await findSessionById(sessionId)
+    if (session && session.tokenUsage >= session.tokenBudget) {
+      onToken('⚠️ Token budget exceeded. Session stopped to prevent cost overrun.')
+      break
+    }
+
     // Call LLM API
     const response = await callLLM(messages, toolSchemas, signal)
-    await addTokenUsage(sessionId, response.usage?.total_tokens ?? 0)
+    const updated = await addTokensAndReturn(sessionId, response.usage?.total_tokens ?? 0)
+
+    // Check budget after adding tokens — stop if exceeded
+    if (updated && updated.tokenUsage >= updated.tokenBudget) {
+      onToken('⚠️ Token budget exceeded. Session stopped to prevent cost overrun.')
+      break
+    }
 
     if (response.type === 'text') {
       // Stream tokens to UI
@@ -123,6 +138,17 @@ export async function runAgentLoop(
       const result = await tool.execute(toolParams, response.toolArgs)
       onToolCall(response.toolName, response.toolArgs, result)
       await incrementToolCallCount(sessionId)
+
+      // PostHog: track tool call
+      await captureServerEvent('agent_tool_call', {
+        sessionId,
+        tool: response.toolName,
+        success: result.success,
+        durationMs: result.durationMs,
+        workspaceId,
+        iteration,
+      })
+
       messages.push({
         role: 'tool',
         content: result.output,

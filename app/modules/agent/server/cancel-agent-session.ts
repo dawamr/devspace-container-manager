@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { requirePermission } from '#/modules/rbac/server/require-permission'
 import { RESOURCES, ACTIONS } from '#/modules/rbac/domain/constants'
 import { findSessionById, updateSession } from '#/modules/agent/infrastructure/agent-session-repository'
+import { captureServerEvent } from '#/shared/lib/posthog-server'
 import { abortSession } from './abort-registry'
 
 const CancelSessionInput = z.object({
@@ -21,5 +22,12 @@ export const cancelAgentSessionFn = createServerFn({ method: 'POST' })
 
     const aborted = abortSession(data.sessionId)
     await updateSession(session.id, { status: 'cancelled', endedAt: new Date() })
+
+    await captureServerEvent('agent_session_cancelled', {
+      sessionId: session.id,
+      workspaceId: session.workspaceId,
+      userId: user.id,
+    })
+
     return { success: true, aborted }
   })

@@ -53,7 +53,7 @@ Memberikan capability AI agent yang bisa membaca file, menulis file, dan menjala
 | 6 | Agent loop + session management server functions | 1, 4 | 4 | 4, 5 | Loop dengan MAX_ITERATIONS=20, tool dispatch, token tracking, abort/cancel | High | ✅ Done |
 | 7 | Agent UI components: file sidebar, chat panel, tool call card | 5 | 3 | 6 | 5 components, message rendering, tool call display, cancel button | Med | ✅ Done |
 | 8 | Agent page route + dashboard navigation | 5 | 1 | 7 | Route `/dashboard/agent`, workspace selector, sidebar + chat layout | Low | ✅ Done |
-| 9 | Hardening: token budget enforcement + tool limit + PostHog events | 1 | 2 | 6 | `AGENT_TOKEN_BUDGET` di-enforce di loop, `AGENT_TOOL_LIMIT` di-enforce, PostHog events (`agent_session_*`) | Med | ⬜ TODO |
+| 9 | Hardening: token budget enforcement + tool limit + PostHog events | 1 | 2 | 6 | `AGENT_TOKEN_BUDGET` di-enforce di loop, `AGENT_TOOL_LIMIT` di-enforce, PostHog events (`agent_session_*`) | Med | ✅ Done |
 | 10 | E2E manual verification + demo prep | — | 2 | 8, 9 | Agent bisa: baca file, tulis file, jalankan `ls`/`git status`, cancel session, tidak crash web app | Med | ⬜ TODO |
 
 **Total estimasi:** 26 jam (18 jam done, 8 jam tersisa)
@@ -151,14 +151,14 @@ TanStack Start (Node.js)
 - [x] Command length limit: 500 karakter
 - [x] RBAC: semua agent server functions melalui `requirePermission`
 - [x] Session ownership: user hanya bisa akses session miliknya
-- [ ] Token budget enforcement: agent stop ketika `tokenUsage > tokenBudget` — **TODO (Task 9)**
-- [ ] Tool limit enforcement: agent stop ketika `toolCallCount > AGENT_TOOL_LIMIT` — **TODO (Task 9)**
+- [x] Token budget enforcement: agent stop ketika `tokenUsage > tokenBudget` — pre-check + post-check per iteration
+- [x] Tool limit enforcement: `MAX_ITERATIONS = env.AGENT_TOOL_LIMIT` (default 50)
 
 ### Observability
 - [x] Token usage tracked per session (`agent_sessions.tokenUsage`)
 - [x] Tool call count tracked per session (`agent_sessions.toolCallCount`)
 - [x] Session status tracked (`active` / `completed` / `error` / `cancelled`)
-- [ ] PostHog events: `agent_session_started`, `agent_session_completed`, `agent_session_error`, `agent_session_cancelled`, `agent_tool_call` — **TODO (Task 9)**
+- [x] PostHog events: `agent_session_started`, `agent_session_completed`, `agent_session_error`, `agent_session_cancelled`, `agent_tool_call`
 
 ### Demo Readiness
 - [x] Seed data: test workspace tersedia
@@ -170,7 +170,7 @@ TanStack Start (Node.js)
 | # | Risk | Type | Impact | Mitigation | Status |
 |---|------|------|--------|-----------|--------|
 | 1 | Agent loop crash → web app down | Tech | High | try/catch + AbortController + (future: process manager) | ⚠️ Mitigated — try/catch ada, tapi belum ada timeout per iteration |
-| 2 | LLM API cost/rate limit | Dependency | Med | `AGENT_TOKEN_BUDGET` env var (50000) — belum di-enforce | ⬜ Open — Task 9 |
+| 2 | LLM API cost/rate limit | Dependency | Med | `AGENT_TOKEN_BUDGET` env var (50000) — di-enforce pre+post check per iteration | ✅ Mitigated |
 | 3 | Agent output tidak deterministic | Validation | Med | Tool validation + exec whitelist + path containment | ✅ Mitigated |
 | 4 | Path escape via symlink | Security | High | `PathGuard.validatePath` + `path.resolve` normalization | ✅ Mitigated |
 | 5 | Exec command injection | Security | High | ExecWhitelist + forbidden operators + command length limit | ✅ Mitigated |

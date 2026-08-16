@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { db } from '#/shared/db/client'
 import { agentSessions } from '#/shared/db/schema'
 
@@ -46,20 +46,25 @@ export async function updateSession(id: string, data: Partial<{
 }
 
 export async function incrementToolCallCount(id: string) {
-  const session = await findSessionById(id)
-  if (!session) return null
   const [updated] = await db.update(agentSessions)
-    .set({ toolCallCount: session.toolCallCount + 1 })
+    .set({ toolCallCount: sql`${agentSessions.toolCallCount} + 1` })
     .where(eq(agentSessions.id, id))
     .returning()
   return updated ?? null
 }
 
 export async function addTokenUsage(id: string, tokens: number) {
-  const session = await findSessionById(id)
-  if (!session) return null
   const [updated] = await db.update(agentSessions)
-    .set({ tokenUsage: session.tokenUsage + tokens })
+    .set({ tokenUsage: sql`${agentSessions.tokenUsage} + ${tokens}` })
+    .where(eq(agentSessions.id, id))
+    .returning()
+  return updated ?? null
+}
+
+/** Atomically add tokens and return the updated row (for budget checks). */
+export async function addTokensAndReturn(id: string, tokens: number) {
+  const [updated] = await db.update(agentSessions)
+    .set({ tokenUsage: sql`${agentSessions.tokenUsage} + ${tokens}` })
     .where(eq(agentSessions.id, id))
     .returning()
   return updated ?? null
